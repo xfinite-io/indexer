@@ -111,6 +111,7 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 			stxn.Txn.GenesisHash = block.GenesisHash
 		}
 		stxnad := stxn.SignedTxnWithAD
+		noteField := noteField
 		if stxn.Txn.Note != nil {
 			json.Unmarshal(stxn.Txn.Note, &noteField)
 			if noteField.prefix == "mzaalo" {

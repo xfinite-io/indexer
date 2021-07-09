@@ -3,6 +3,7 @@ package importer
 import (
 	"bytes"
 	"fmt"
+	"encoding/json"
 
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/algorand/indexer/util"
@@ -19,6 +20,10 @@ type Importer interface {
 
 type dbImporter struct {
 	db idb.IndexerDb
+}
+
+type noteField struct {
+	prefix string
 }
 
 // TypeEnumMap is used to convert type strings into idb types.
@@ -106,19 +111,24 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 			stxn.Txn.GenesisHash = block.GenesisHash
 		}
 		stxnad := stxn.SignedTxnWithAD
-		participants := make([][]byte, 0, 10)
-		participants = participate(participants, stxn.Txn.Sender[:])
-		participants = participate(participants, stxn.Txn.Receiver[:])
-		participants = participate(participants, stxn.Txn.CloseRemainderTo[:])
-		participants = participate(participants, stxn.Txn.AssetSender[:])
-		participants = participate(participants, stxn.Txn.AssetReceiver[:])
-		participants = participate(participants, stxn.Txn.AssetCloseTo[:])
-		participants = participate(participants, stxn.Txn.FreezeAccount[:])
-		err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants)
-		if err != nil {
-			return txCount, fmt.Errorf("error importing txn r=%d i=%d, %v", round, intra, err)
+		if stxn.Txn.Note != nil {
+			json.Unmarshal(stxn.Txn.Note, &noteField)
+			if noteField.prefix == "mzaalo" {
+				participants := make([][]byte, 0, 10)
+				participants = participate(participants, stxn.Txn.Sender[:])
+				participants = participate(participants, stxn.Txn.Receiver[:])
+				participants = participate(participants, stxn.Txn.CloseRemainderTo[:])
+				participants = participate(participants, stxn.Txn.AssetSender[:])
+				participants = participate(participants, stxn.Txn.AssetReceiver[:])
+				participants = participate(participants, stxn.Txn.AssetCloseTo[:])
+				participants = participate(participants, stxn.Txn.FreezeAccount[:])
+				err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants)
+				if err != nil {
+					return txCount, fmt.Errorf("error importing txn r=%d i=%d, %v", round, intra, err)
+				}
+				txCount++
+			}
 		}
-		txCount++
 	}
 	blockheaderBytes := msgpack.Encode(block.BlockHeader)
 	err = imp.db.CommitBlock(round, block.TimeStamp, block.RewardsLevel, blockheaderBytes)

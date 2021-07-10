@@ -3,7 +3,7 @@ package importer
 import (
 	"bytes"
 	"fmt"
-	"encoding/json"
+	//"encoding/json"
 
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/algorand/indexer/util"
@@ -111,10 +111,10 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 			stxn.Txn.GenesisHash = block.GenesisHash
 		}
 		stxnad := stxn.SignedTxnWithAD
-		var note = noteField{}
+		//var note = noteField{}
 		if stxn.Txn.Note != nil {
-			json.Unmarshal(stxn.Txn.Note, &note)
-			if note.prefix == "mzaalo" {
+			//json.Unmarshal(stxn.Txn.Note, &note)
+			if string(stxn.Txn.Note) == "mzaalo" {
 				participants := make([][]byte, 0, 10)
 				participants = participate(participants, stxn.Txn.Sender[:])
 				participants = participate(participants, stxn.Txn.Receiver[:])

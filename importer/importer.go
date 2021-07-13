@@ -3,7 +3,7 @@ package importer
 import (
 	"bytes"
 	"fmt"
-	//"encoding/json"
+	"encoding/json"
 
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/algorand/indexer/util"
@@ -23,7 +23,7 @@ type dbImporter struct {
 }
 
 type noteField struct {
-	prefix string
+	org string
 }
 
 // TypeEnumMap is used to convert type strings into idb types.
@@ -111,10 +111,12 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 			stxn.Txn.GenesisHash = block.GenesisHash
 		}
 		stxnad := stxn.SignedTxnWithAD
-		//var note = noteField{}
+		var note map[string]string
 		if stxn.Txn.Note != nil {
-			//json.Unmarshal(stxn.Txn.Note, &note)
-			if string(stxn.Txn.Note) == "mzaalo" {
+			//fmt.Println(string(stxn.Txn.Note))
+			json.Unmarshal([]byte(string(stxn.Txn.Note)), &note)
+			//fmt.Println(note["org"])
+			if note["org"] == "mzaalo" {
 				participants := make([][]byte, 0, 10)
 				participants = participate(participants, stxn.Txn.Sender[:])
 				participants = participate(participants, stxn.Txn.Receiver[:])

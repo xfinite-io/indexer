@@ -111,12 +111,12 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 			stxn.Txn.GenesisHash = block.GenesisHash
 		}
 		stxnad := stxn.SignedTxnWithAD
-		var note map[string]string
+		var note map[string]interface{}
 		if stxn.Txn.Note != nil {
-			//fmt.Println(string(stxn.Txn.Note))
+			fmt.Println(string(stxn.Txn.Note))
 			json.Unmarshal([]byte(string(stxn.Txn.Note)), &note)
-			//fmt.Println(note["org"])
-			if note["org"] == "mzaalo" {
+			fmt.Println(note["org"].(string))
+			if note["org"].(string) == "mzaalo" {
 				participants := make([][]byte, 0, 10)
 				participants = participate(participants, stxn.Txn.Sender[:])
 				participants = participate(participants, stxn.Txn.Receiver[:])

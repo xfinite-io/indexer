@@ -85,9 +85,9 @@ type IndexerDb interface {
 
 	LoadGenesis(genesis types.Genesis) (err error)
 
-	// GetMaxRoundAccounted returns ErrorNotInitialized if there are no accounted rounds.
-	GetMaxRoundAccounted() (round uint64, err error)
-	GetNextRoundToLoad() (round uint64, err error)
+	// GetNextRoundToAccount returns ErrorNotInitialized if genesis is not loaded.
+	GetNextRoundToAccount() (uint64, error)
+	GetNextRoundToLoad() (uint64, error)
 	GetSpecialAccounts() (SpecialAccounts, error)
 	GetDefaultFrozen() (defaultFrozen map[uint64]bool, err error)
 
@@ -284,10 +284,6 @@ type ApplicationRow struct {
 // IndexerDbOptions are the options common to all indexer backends.
 type IndexerDbOptions struct {
 	ReadOnly bool
-
-	// NoMigrate indicates to not run any migrations.
-	// Should probably only be used by the `reset` subcommand.
-	NoMigrate bool
 }
 
 // AssetUpdate is used by the accounting and IndexerDb implementations to share modifications in a block.

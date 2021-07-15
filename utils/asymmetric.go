@@ -13,11 +13,11 @@ import (
 func GenerateECDSA(){
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
 
 	publickey := privatekey.Public()
-	return privatekey, publickey
+	return privatekey, publickey, nil
 }
 
 
@@ -25,9 +25,9 @@ func GenerateECDSA(){
 func SignECDSA(privatekey *PrivateKey, hash []byte){
 	sig, err := ecdsa.SignASN1(rand.Reader, privateKey, hash)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return sig
+	return sig, nil
 }
 
 

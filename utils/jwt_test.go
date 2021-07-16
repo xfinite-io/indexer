@@ -155,3 +155,60 @@ func TestVerifyToken(t *testing.T) {
 		t.Errorf(body2)
 	}
 }
+
+func TestFetchAuth(t *testing.T) {
+	user_id = int64(1)
+	token, err := CreateToken(user_id)
+	if err != nil {
+		t.Errorf("error")
+	}
+	err := CreateAuth(user_id, token)
+	if err != nil {
+		t.Errorf("error")
+	}
+
+	var authD AccessDetails
+	authD.AccessUuid = token.AccessUuid
+	authD.UserId = user_id
+	_, err := FetchAuth(authD)
+
+	if err != nil {
+		t.Errorf("FetchAuth with valid AccessDetails should not throw an error , err=%s\n", err)
+	}
+
+	token2, err := CreateToken(int64(2))
+	if err != nil {
+		t.Errorf("error")
+	}
+	authD.AccessUuid = token2.AccessUuid
+	authD.UserId = int64(2)
+	_, err := FetchAuth(authD)
+	if err == nil {
+		t.Errorf("FetchAuth with invalid AccessDetails should throw an error")
+	}
+}
+
+func TestDeleteTokens(t *testing.T) {
+	user_id = int64(1)
+	token, err := CreateToken(user_id)
+	if err != nil {
+		t.Errorf("error")
+	}
+	err := CreateAuth(user_id, token)
+	if err != nil {
+		t.Errorf("error")
+	}
+
+	var authD AccessDetails
+	authD.AccessUuid = token.AccessUuid
+	authD.UserId = user_id
+
+	err := DeleteTokens(authD)
+	if err != nil {
+		t.Errorf("DeleteTokens with valid AccessDetails should not throw an error , err=%s\n", err)
+	}
+	_, err := FetchAuth(authD)
+	if err == nil {
+		t.Errorf("Unable to DeleteTokens")
+	}
+}

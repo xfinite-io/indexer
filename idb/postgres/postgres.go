@@ -33,6 +33,7 @@ import (
 	"github.com/algorand/indexer/idb/migration"
 	"github.com/algorand/indexer/idb/postgres/internal/encoding"
 	"github.com/algorand/indexer/types"
+	"github.com/google/uuid"
 )
 
 type importState struct {
@@ -194,11 +195,11 @@ func (db *IndexerDb) StartBlock() (err error) {
 }
 
 // AddTransaction is part of idb.IndexerDB
-func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte) error {
+func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte, note_type string, note_txid uuid.UUID) error {
 	txnbytes := msgpack.Encode(txn)
 	jsonbytes := encoding.EncodeSignedTxnWithAD(txn)
 	txid := crypto.TransactionIDString(txn.Txn)
-	tx := []interface{}{round, intra, txtypeenum, assetid, txid[:], txnbytes, string(jsonbytes)}
+	tx := []interface{}{round, intra, txtypeenum, assetid, txid[:], txnbytes, string(jsonbytes), note_type, note_txid}
 	db.txrows = append(db.txrows, tx)
 	for _, paddr := range participation {
 		txp := []interface{}{paddr, round, intra}
@@ -210,7 +211,7 @@ func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, ass
 func (db *IndexerDb) commitBlock(tx *sql.Tx, round uint64, timestamp int64, rewardslevel uint64, headerbytes []byte) error {
 	defer tx.Rollback() // ignored if already committed
 
-	addtx, err := tx.Prepare(`COPY txn (round, intra, typeenum, asset, txid, txnbytes, txn) FROM STDIN`)
+	addtx, err := tx.Prepare(`COPY txn (round, intra, typeenum, asset, txid, txnbytes, txn, note_type, note_txid) FROM STDIN`)
 	if err != nil {
 		return fmt.Errorf("COPY txn %v", err)
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/algorand/indexer/idb"
 	"github.com/algorand/indexer/types"
+	"github.com/google/uuid"
 )
 
 // Importer is used to import blocks into an idb.IndexerDb object.
@@ -125,7 +126,7 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 				participants = participate(participants, stxn.Txn.AssetReceiver[:])
 				participants = participate(participants, stxn.Txn.AssetCloseTo[:])
 				participants = participate(participants, stxn.Txn.FreezeAccount[:])
-				err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants)
+				err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants, note["type"].(string), note["id"].(uuid.UUID))
 				if err != nil {
 					return txCount, fmt.Errorf("error importing txn r=%d i=%d, %v", round, intra, err)
 				}

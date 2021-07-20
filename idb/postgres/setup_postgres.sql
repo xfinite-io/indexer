@@ -30,6 +30,9 @@ PRIMARY KEY ( round, intra )
 -- For transaction lookup
 CREATE INDEX IF NOT EXISTS txn_by_tixid ON txn ( txid );
 
+--For note field lookup
+CREATE INDEX IF NOT EXISTS txn_by_note ON txn (note_type, note_txid);
+
 -- Optional, to make txn queries by asset fast:
 -- CREATE INDEX CONCURRENTLY IF NOT EXISTS txn_asset ON txn (asset, round, intra);
 

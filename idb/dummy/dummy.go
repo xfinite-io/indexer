@@ -8,6 +8,7 @@ import (
 	models "github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/idb"
 	"github.com/algorand/indexer/types"
+	"github.com/google/uuid"
 )
 
 type dummyIndexerDb struct {
@@ -26,7 +27,7 @@ func (db *dummyIndexerDb) StartBlock() (err error) {
 }
 
 // AddTransaction is part of idb.IndexerDB
-func (db *dummyIndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte) error {
+func (db *dummyIndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte, note_type string, note_txid uuid.UUID) error {
 	db.log.Printf("\ttxn %d %d %d %d", round, intra, txtypeenum, assetid)
 	return nil
 }

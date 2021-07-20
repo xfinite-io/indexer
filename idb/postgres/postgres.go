@@ -37,8 +37,6 @@ import (
 )
 
 type importState struct {
-	// DEPRECATED. Last accounted round.
-	AccountRound *int64 `codec:"account_round"`
 	// Next round to account.
 	NextRoundToAccount *uint64 `codec:"next_account_round"`
 }
@@ -2363,9 +2361,10 @@ func baPtr(x []byte) *[]byte {
 	if allzero {
 		return nil
 	}
-	out := new([]byte)
-	*out = x
-	return out
+
+	xx := make([]byte, len(x))
+	copy(xx, x)
+	return &xx
 }
 
 func allZero(x []byte) bool {

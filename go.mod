@@ -7,6 +7,7 @@ require (
 	github.com/algorand/go-codec/codec v1.1.7
 	github.com/algorand/oapi-codegen v1.3.5-algorand5
 	github.com/getkin/kin-openapi v0.19.0
+	github.com/google/uuid v1.1.1
 	github.com/labstack/echo-contrib v0.10.0
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/lib/pq v1.5.1

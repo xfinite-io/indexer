@@ -114,9 +114,10 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 		stxnad := stxn.SignedTxnWithAD
 		var note map[string]interface{}
 		if stxn.Txn.Note != nil {
-			fmt.Println(string(stxn.Txn.Note))
-			json.Unmarshal([]byte(string(stxn.Txn.Note)), &note)
-			fmt.Println(note["org"].(string))
+			//fmt.Println(string(stxn.Txn.Note))
+			json.Unmarshal([]byte(stxn.Txn.Note), &note)
+			fmt.Println(note["org"])
+			fmt.Println(note["type"])
 			if note["org"].(string) == "mzaalo" {
 				participants := make([][]byte, 0, 10)
 				participants = participate(participants, stxn.Txn.Sender[:])
@@ -126,7 +127,7 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 				participants = participate(participants, stxn.Txn.AssetReceiver[:])
 				participants = participate(participants, stxn.Txn.AssetCloseTo[:])
 				participants = participate(participants, stxn.Txn.FreezeAccount[:])
-				err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants, note["type"].(string), note["id"].(uuid.UUID))
+				err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants, note["type"].(string), uuid.MustParse(note["id"].(string)))
 				if err != nil {
 					return txCount, fmt.Errorf("error importing txn r=%d i=%d, %v", round, intra, err)
 				}

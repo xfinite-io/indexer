@@ -22,7 +22,8 @@ txid bytea NOT NULL, -- base32 of [32]byte hash
 txnbytes bytea NOT NULL, -- msgpack encoding of signed txn with apply data
 txn jsonb NOT NULL, -- json encoding of signed txn with apply data
 note_type VARCHAR NOT NULL,
-note_txid UUID NOT NULL, 
+note_txid UUID NOT NULL,
+note jsonb NOT NULL,
 extra jsonb,
 PRIMARY KEY ( round, intra )
 );

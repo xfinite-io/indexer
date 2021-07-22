@@ -81,7 +81,7 @@ var ErrorNotInitialized error = errors.New("accounting not initialized")
 type IndexerDb interface {
 	// The next few functions define the import interface, functions for loading data into the database. StartBlock() through Get/SetImportState().
 	StartBlock() error
-	AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte, note_type string, note_txid uuid.UUID) error
+	AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte, note_type string, note_txid uuid.UUID, note string) error
 	CommitBlock(round uint64, timestamp int64, rewardslevel uint64, headerbytes []byte) error
 
 	LoadGenesis(genesis types.Genesis) (err error)

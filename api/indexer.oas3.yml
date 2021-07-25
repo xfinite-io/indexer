@@ -416,6 +416,109 @@
         },
         "description": "(empty)"
       },
+      "GetRedemptionResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "(empty)",
+                  "properties": {
+                    "amount": {
+                      "description": "(empty)",
+                      "type": "number"
+                    },
+                    "coupon_brand_logo": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_brand_name": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_code": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_company": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_details": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_discount": {
+                      "description": "(empty)",
+                      "type": "number"
+                    },
+                    "coupon_expiry": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_how_to_redeem": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_id": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_images": {
+                      "description": "(empty)",
+                      "items": {
+                        "description": "(empty)",
+                        "properties": {
+                          "coupon_images": {
+                            "description": "(empty)",
+                            "items": {
+                              "description": "(empty)",
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "coupon_videos": {
+                            "description": "(empty)",
+                            "items": {
+                              "description": "(empty)",
+                              "type": "string"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "coupon_tnc": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "usage_id": {
+                      "description": "(empty)",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "message": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "(empty)"
+      },
       "HealthCheckResponse": {
         "content": {
           "application/json": {
@@ -1756,6 +1859,20 @@
         ]
       }
     },
+    "/redemption/api/v2/coupon/getRedemptions/transactionid": {
+      "post": {
+        "description": "Redemption api to get coupon details",
+        "operationId": "getRedemption",
+        "responses": {
+          "200": {
+            "content": {}
+          }
+        },
+        "tags": [
+          "search"
+        ]
+      }
+    },
     "/v2/accounts": {
       "get": {
         "description": "Search for accounts.",
@@ -3048,95 +3165,6 @@
         "tags": [
           "lookup"
         ]
-      }
-    }
-    "/redemption/api/v2/coupon/getRedemptions/transactionid": {
-      "post": {
-        "description": "Redemption api to get coupon details",
-        "operationId": "getRedemption",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "code": {
-                      "type": "integer"
-                    },
-                    "success": {
-                      "type": "bool"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "amount": {
-                          "type": "number"
-                        },
-                        "coupon_id": {
-                          "type": "string"
-                        },
-                        "coupon_code": {
-                          "type": "string"
-                        },
-                        "usage_id": {
-                          "type": "string"
-                        },
-                        "coupon_how_to_redeem": {
-                          "type": "string"
-                        },
-                        "coupon_discount": {
-                          "type": "number"
-                        },
-                        "coupon_tnc": {
-                          "type": "string"
-                        },
-                        "coupon_details": {
-                          "type": "string"
-                        },
-                        "coupon_company": {
-                          "type": "string"
-                        },
-                        "coupon_expiry": {
-                          "type": "string"
-                        },
-                        "coupon_brand_logo": {
-                          "type": "string"
-                        },
-                        "coupon_brand_name": {
-                          "type": "string"
-                        },
-                        "coupon_images": {
-                          "type": "array"
-                          "items": {
-                            "type": "object"
-                            "properties": {
-                              "coupon_images": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              },
-                              "coupon_videos": {
-                                "type": "array",
-                                "items": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   },

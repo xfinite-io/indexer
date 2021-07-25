@@ -617,6 +617,36 @@
           }
         }
       }
+    },
+    "/redemption/api/v2/coupon/getRedemptions/transactionid": {
+      "post": {
+        "description": "Redemption api to get coupon details",
+        "operationId": "getRedemption",
+        "tags": ["search"],
+        "requestbody": {
+          "description":"(empty)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "transaction_id": {
+                  "type":"string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref":"#/responses/GetRedemptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -2243,6 +2273,109 @@
             }
           }
         }
+      }
+    },
+    "GetRedemptionResponse": {
+      "description":"(empty)",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "(empty)",
+            "type": "integer"
+          },
+          "success": {
+            "description": "(empty)",
+            "type": "bool"
+          },
+          "message": {
+            "description": "(empty)",
+            "type": "string"
+          },
+          "data": {
+            "description": "(empty)",
+            "type": "object",
+            "properties": {
+              "amount": {
+                "description": "(empty)",
+                "type": "number"
+              },
+              "coupon_id": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_code": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "usage_id": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_how_to_redeem": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_discount": {
+                "description": "(empty)",
+                "type": "number"
+              },
+              "coupon_tnc": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_details": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_company": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_expiry": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_brand_logo": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_brand_name": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_images": {
+                "description": "(empty)",
+                "type": "array",
+                "items": {
+                  "description": "(empty)",
+                  "type": "object",
+                  "properties": {
+                    "coupon_images": {
+                      "description": "(empty)",
+                      "type": "array",
+                      "items": {
+                        "description": "(empty)",
+                        "type": "string"
+                      }
+                    },
+                    "coupon_videos": {
+                      "description": "(empty)",
+                      "type": "array",
+                      "items": {
+                        "description": "(empty)",
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "message"
+        ]
       }
     }
   },

@@ -99,6 +99,8 @@ type IndexerDb interface {
 
 	GetBlock(ctx context.Context, round uint64, options GetBlockOptions) (blockHeader types.BlockHeader, transactions []TxnRow, err error)
 
+	GetRedemptions(ctx context.Context, transaction_id uuid.UUID)
+
 	// The next multiple functions return a channel with results as well as the latest round
 	// accounted.
 	Transactions(ctx context.Context, tf TransactionFilter) (<-chan TxnRow, uint64)

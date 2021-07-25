@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"encoding/json"
 
 	"github.com/labstack/echo/v4"
 
@@ -451,6 +452,39 @@ func (si *ServerImplementation) SearchForTransactions(ctx echo.Context, params g
 		Transactions: txns,
 	}
 
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// GetRedemption provides redemption api to get coupon details 
+// (POST /redemption/api/v2/coupon/getRedemptions/transactionid)
+func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
+	var tx map[string]uuid.UUID
+	err := json.Unmarshal(ctx.Request().Body, &tx)
+	if err != nil {
+		badRequest(ctx, err.Error())
+	}
+	transaction_id := tx["transaction_id"]
+	out, err := idb.GetRedemptions(ctx.Request().Context(), transaction_id)
+	if err != nil {
+		badRequest(ctx, err.Error())
+	}
+
+	response := generated.GetRedemptionResponse{
+		Code: 200,
+		Data.Amount: out.amount,
+		Data.CouponBrandLogo: out.coupon_brand_logo,
+		Data.CouponBrandName: out.coupon_brand_name,
+		Data.CouponCode: out.coupon_code,
+		Data.CouponCompany: out.coupon_company,
+		Data.CouponDetails: out.coupon_details,
+		Data.CouponDiscount: out.coupon_discount,
+		Data.CouponExpiry: out.coupon_expiry,
+		Data.CouponHowToRedeem: out.coupon_how_to_redeem,
+		Data.CouponId: out.coupon_id,
+		Data.CouponImages: out.coupon_assets,
+		Data.CouponTnc: out.coupon_tnc,
+		Data.UsageId: out.usage_id
+	}
 	return ctx.JSON(http.StatusOK, response)
 }
 

@@ -937,6 +937,66 @@ type AssetsResponse struct {
 // BlockResponse defines model for BlockResponse.
 type BlockResponse Block
 
+// GetRedemptionResponse defines model for GetRedemptionResponse.
+type GetRedemptionResponse struct {
+
+	// (empty)
+	Code *uint64 `json:"code,omitempty"`
+
+	// (empty)
+	Data *struct {
+
+		// (empty)
+		Amount *float32 `json:"amount,omitempty"`
+
+		// (empty)
+		CouponBrandLogo *string `json:"coupon_brand_logo,omitempty"`
+
+		// (empty)
+		CouponBrandName *string `json:"coupon_brand_name,omitempty"`
+
+		// (empty)
+		CouponCode *string `json:"coupon_code,omitempty"`
+
+		// (empty)
+		CouponCompany *string `json:"coupon_company,omitempty"`
+
+		// (empty)
+		CouponDetails *string `json:"coupon_details,omitempty"`
+
+		// (empty)
+		CouponDiscount *float32 `json:"coupon_discount,omitempty"`
+
+		// (empty)
+		CouponExpiry *string `json:"coupon_expiry,omitempty"`
+
+		// (empty)
+		CouponHowToRedeem *string `json:"coupon_how_to_redeem,omitempty"`
+
+		// (empty)
+		CouponId *string `json:"coupon_id,omitempty"`
+
+		// (empty)
+		CouponImages *[]struct {
+
+			// (empty)
+			CouponImages *[]string `json:"coupon_images,omitempty"`
+
+			// (empty)
+			CouponVideos *[]string `json:"coupon_videos,omitempty"`
+		} `json:"coupon_images,omitempty"`
+
+		// (empty)
+		CouponTnc *string `json:"coupon_tnc,omitempty"`
+
+		// (empty)
+		UsageId *string `json:"usage_id,omitempty"`
+	} `json:"data,omitempty"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
 // HealthCheckResponse defines model for HealthCheckResponse.
 type HealthCheckResponse HealthCheck
 

@@ -3170,7 +3170,7 @@
   },
   "servers": [
     {
-      "url": "https://example.com/"
+      "url": "https://https://ec2-15-207-249-100.ap-south-1.compute.amazonaws.com//"
     }
   ],
   "tags": [

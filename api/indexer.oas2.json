@@ -12,7 +12,7 @@
     },
     "version": "2.0"
   },
-  "host": "example.com",
+  "host": "https://ec2-15-207-249-100.ap-south-1.compute.amazonaws.com/",
   "produces": [
     "application/json"
   ],

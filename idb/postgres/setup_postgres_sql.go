@@ -128,4 +128,17 @@ CREATE TABLE IF NOT EXISTS account_app (
 
 -- For account lookup
 CREATE INDEX IF NOT EXISTS account_app_by_addr ON account_app ( addr );
+
+-- Adding Redemptions table via foreign data wrapper
+CREATE EXTENSION postgres_fdw;
+
+CREATE SERVER redemptions FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'redemptions-staging.postgres.database.azure.com', dbname 'postgres', port '5432');
+
+CREATE USER MAPPING FOR CURRENT_USER
+SERVER redemptions
+OPTIONS (user 'xfinite@redemptions-staging', password 'Xinaam@123');
+
+CREATE SCHEMA redemption;
+
+IMPORT FOREIGN SCHEMA public FROM SERVER redemptions INTO redemption;
 `

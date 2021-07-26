@@ -490,6 +490,10 @@
                             "type": "array"
                           }
                         },
+                        "required": [
+                          "coupon_images",
+                          "coupon_videos"
+                        ],
                         "type": "object"
                       },
                       "type": "array"
@@ -503,6 +507,21 @@
                       "type": "string"
                     }
                   },
+                  "required": [
+                    "amount",
+                    "coupon_brand_logo",
+                    "coupon_brand_name",
+                    "coupon_code",
+                    "coupon_company",
+                    "coupon_details",
+                    "coupon_discount",
+                    "coupon_expiry",
+                    "coupon_how_to_redeem",
+                    "coupon_id",
+                    "coupon_images",
+                    "coupon_tnc",
+                    "usage_id"
+                  ],
                   "type": "object"
                 },
                 "message": {

@@ -947,50 +947,50 @@ type GetRedemptionResponse struct {
 	Data struct {
 
 		// (empty)
-		Amount *float32 `json:"amount,omitempty"`
+		Amount float32 `json:"amount"`
 
 		// (empty)
-		CouponBrandLogo *string `json:"coupon_brand_logo,omitempty"`
+		CouponBrandLogo string `json:"coupon_brand_logo"`
 
 		// (empty)
-		CouponBrandName *string `json:"coupon_brand_name,omitempty"`
+		CouponBrandName string `json:"coupon_brand_name"`
 
 		// (empty)
-		CouponCode *string `json:"coupon_code,omitempty"`
+		CouponCode string `json:"coupon_code"`
 
 		// (empty)
-		CouponCompany *string `json:"coupon_company,omitempty"`
+		CouponCompany string `json:"coupon_company"`
 
 		// (empty)
-		CouponDetails *string `json:"coupon_details,omitempty"`
+		CouponDetails string `json:"coupon_details"`
 
 		// (empty)
-		CouponDiscount *float32 `json:"coupon_discount,omitempty"`
+		CouponDiscount float32 `json:"coupon_discount"`
 
 		// (empty)
-		CouponExpiry *string `json:"coupon_expiry,omitempty"`
+		CouponExpiry string `json:"coupon_expiry"`
 
 		// (empty)
-		CouponHowToRedeem *string `json:"coupon_how_to_redeem,omitempty"`
+		CouponHowToRedeem string `json:"coupon_how_to_redeem"`
 
 		// (empty)
-		CouponId *string `json:"coupon_id,omitempty"`
+		CouponId string `json:"coupon_id"`
 
 		// (empty)
-		CouponImages *[]struct {
+		CouponImages []struct {
 
 			// (empty)
-			CouponImages *[]string `json:"coupon_images,omitempty"`
+			CouponImages []string `json:"coupon_images"`
 
 			// (empty)
-			CouponVideos *[]string `json:"coupon_videos,omitempty"`
-		} `json:"coupon_images,omitempty"`
+			CouponVideos []string `json:"coupon_videos"`
+		} `json:"coupon_images"`
 
 		// (empty)
-		CouponTnc *string `json:"coupon_tnc,omitempty"`
+		CouponTnc string `json:"coupon_tnc"`
 
 		// (empty)
-		UsageId *string `json:"usage_id,omitempty"`
+		UsageId string `json:"usage_id"`
 	} `json:"data"`
 
 	// (empty)

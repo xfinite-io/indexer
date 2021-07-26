@@ -2367,10 +2367,29 @@
                         "type": "string"
                       }
                     }
-                  }
+                  },
+                  "required": [
+                    "coupon_images",
+                    "coupon_videos"
+                  ]
                 }
               }
-            }
+            },
+            "required": [
+              "amount",
+              "coupon_id",
+              "coupon_code",
+              "usage_id",
+              "coupon_how_to_redeem",
+              "coupon_discount",
+              "coupon_tnc",
+              "coupon_details",
+              "coupon_company",
+              "coupon_expiry",
+              "coupon_brand_logo",
+              "coupon_brand_name",
+              "coupon_images"
+            ]
           }
         },
         "required": [

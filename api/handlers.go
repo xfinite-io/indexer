@@ -469,22 +469,45 @@ func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
 	if err != nil {
 		badRequest(ctx, err.Error())
 	}
+	
+	type dataStruc struct {
+		Amount *float32
+                CouponBrandLogo *string
+                CouponBrandName *string
+                CouponCode *string
+                CouponCompany *string
+                CouponDetails *string
+                CouponDiscount *float32
+                CouponExpiry *string
+                CouponHowToRedeem *string
+                CouponId *string
+                CouponImages *[]struct {
+                        CouponImages *[]string
+                        CouponVideos *[]string
+                }
+                CouponTnc *string
+                UsageId *string
+	}
+
+	var dataStruc dataStruc
+	dataStruc.Amount = &float32(out.amount)
+        dataStruc.CouponBrandLogo = &out.coupon_brand_logo
+        dataStruc.CouponBrandName = &out.coupon_brand_name
+        dataStruc.CouponCode = &out.coupon_code
+        dataStruc.CouponCompany = &out.coupon_company
+        dataStruc.CouponDetails = &out.coupon_details
+        dataStruc.CouponDiscount = &float32(out.coupon_discount)
+        dataStruc.CouponExpiry = &out.coupon_expiry
+        dataStruc.CouponHowToRedeem = &out.coupon_how_to_redeem
+        dataStruc.CouponId = &out.coupon_id
+        dataStruc.CouponImages = &out.coupon_assets
+        dataStruc.CouponTnc = &out.coupon_tnc
+        dataStruc.UsageId = &out.usage_id
 
 	response := generated.GetRedemptionResponse{
-		Code: 200,
-		Data.Amount: out.amount,
-		Data.CouponBrandLogo: out.coupon_brand_logo,
-		Data.CouponBrandName: out.coupon_brand_name,
-		Data.CouponCode: out.coupon_code,
-		Data.CouponCompany: out.coupon_company,
-		Data.CouponDetails: out.coupon_details,
-		Data.CouponDiscount: out.coupon_discount,
-		Data.CouponExpiry: out.coupon_expiry,
-		Data.CouponHowToRedeem: out.coupon_how_to_redeem,
-		Data.CouponId: out.coupon_id,
-		Data.CouponImages: out.coupon_assets,
-		Data.CouponTnc: out.coupon_tnc,
-		Data.UsageId: out.usage_id,
+		Code: uint64(200),
+		Data: dataStruc,
+		Message: "data returned",
 	}
 	return ctx.JSON(http.StatusOK, response)
 }

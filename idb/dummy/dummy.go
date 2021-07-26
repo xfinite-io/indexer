@@ -103,8 +103,8 @@ func (db *dummyIndexerDb) Applications(ctx context.Context, filter *models.Searc
 	return nil, 0
 }
 
-func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) {
-	return nil, 0
+func(db *dummyIndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (idb.RedemptionRow, error) {
+	return idb.RedemptionRow{}, nil
 }
 
 // Health is part of idb.IndexerDB

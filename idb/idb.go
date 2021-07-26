@@ -99,7 +99,7 @@ type IndexerDb interface {
 
 	GetBlock(ctx context.Context, round uint64, options GetBlockOptions) (blockHeader types.BlockHeader, transactions []TxnRow, err error)
 
-	GetRedemptions(ctx context.Context, transaction_id uuid.UUID)
+	GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (RedemptionRow, error)
 
 	// The next multiple functions return a channel with results as well as the latest round
 	// accounted.
@@ -272,6 +272,27 @@ type ApplicationRow struct {
 	Application models.Application
 	Error       error
 }
+
+type Coupon_asset []struct{
+                CouponImages []string `json:"coupon_images"`
+		CouponVideos []string `json:"coupon_videos"`
+        }
+
+type RedemptionRow struct{
+                Amount float64
+                Coupon_id string
+                Coupon_code string
+                Usage_id string
+                Coupon_how_to_redeem string
+                Coupon_discount float64
+                Coupon_tnc string
+                Coupon_details string
+                Coupon_company string
+                Coupon_expiry string
+                Coupon_brand_logo string
+                Coupon_brand_name string
+                Coupon_assets Coupon_asset
+	}
 
 // IndexerDbOptions are the options common to all indexer backends.
 type IndexerDbOptions struct {

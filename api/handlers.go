@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"encoding/json"
+	"io/ioutil"
 
 	"github.com/labstack/echo/v4"
 
@@ -460,53 +461,57 @@ func (si *ServerImplementation) SearchForTransactions(ctx echo.Context, params g
 // (POST /redemption/api/v2/coupon/getRedemptions/transactionid)
 func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
 	var tx map[string]uuid.UUID
-	err := json.Unmarshal(ctx.Request().Body, &tx)
+	body, err := ioutil.ReadAll(ctx.Request().Body)
+	if err != nil {
+                badRequest(ctx, err.Error())
+        }
+	err = json.Unmarshal(body, &tx)
 	if err != nil {
 		badRequest(ctx, err.Error())
 	}
 	transaction_id := tx["transaction_id"]
-	out, err := idb.GetRedemptions(ctx.Request().Context(), transaction_id)
+	out, err := si.db.GetRedemptions(ctx.Request().Context(), transaction_id)
 	if err != nil {
 		badRequest(ctx, err.Error())
 	}
 	
 	type dataStruc struct {
-		Amount *float32
-                CouponBrandLogo *string
-                CouponBrandName *string
-                CouponCode *string
-                CouponCompany *string
-                CouponDetails *string
-                CouponDiscount *float32
-                CouponExpiry *string
-                CouponHowToRedeem *string
-                CouponId *string
-                CouponImages *[]struct {
-                        CouponImages *[]string
-                        CouponVideos *[]string
-                }
-                CouponTnc *string
-                UsageId *string
+		Amount float32 `json:"amount"`
+                CouponBrandLogo string `json:"coupon_brand_logo"`
+                CouponBrandName string `json:"coupon_brand_name"`
+                CouponCode string `json:"coupon_code"`
+                CouponCompany string `json:"coupon_company"`
+                CouponDetails string `json:"coupon_details"`
+                CouponDiscount float32 `json:"coupon_discount"`
+                CouponExpiry string `json:"coupon_expiry"`
+                CouponHowToRedeem string `json:"coupon_how_to_redeem"`
+                CouponId string `json:"coupon_id"`
+                CouponImages []struct {
+                        CouponImages []string `json:"coupon_images"`
+                        CouponVideos []string `json:"coupon_videos"`
+                } `json:"coupon_images"`
+                CouponTnc string `json:"coupon_tnc"`
+                UsageId string `json:"usage_id"`
 	}
 
-	var dataStruc dataStruc
-	dataStruc.Amount = &float32(out.amount)
-        dataStruc.CouponBrandLogo = &out.coupon_brand_logo
-        dataStruc.CouponBrandName = &out.coupon_brand_name
-        dataStruc.CouponCode = &out.coupon_code
-        dataStruc.CouponCompany = &out.coupon_company
-        dataStruc.CouponDetails = &out.coupon_details
-        dataStruc.CouponDiscount = &float32(out.coupon_discount)
-        dataStruc.CouponExpiry = &out.coupon_expiry
-        dataStruc.CouponHowToRedeem = &out.coupon_how_to_redeem
-        dataStruc.CouponId = &out.coupon_id
-        dataStruc.CouponImages = &out.coupon_assets
-        dataStruc.CouponTnc = &out.coupon_tnc
-        dataStruc.UsageId = &out.usage_id
+	var data dataStruc
+	data.Amount = float32(out.Amount)
+        data.CouponBrandLogo = out.Coupon_brand_logo
+        data.CouponBrandName = out.Coupon_brand_name
+        data.CouponCode = out.Coupon_code
+        data.CouponCompany = out.Coupon_company
+        data.CouponDetails = out.Coupon_details
+        data.CouponDiscount = float32(out.Coupon_discount)
+        data.CouponExpiry = out.Coupon_expiry
+        data.CouponHowToRedeem = out.Coupon_how_to_redeem
+        data.CouponId = out.Coupon_id
+        data.CouponImages = append(data.CouponImages, out.Coupon_assets...)
+        data.CouponTnc = out.Coupon_tnc
+        data.UsageId = out.Usage_id
 
 	response := generated.GetRedemptionResponse{
 		Code: uint64(200),
-		Data: dataStruc,
+		Data: data,
 		Message: "data returned",
 	}
 	return ctx.JSON(http.StatusOK, response)

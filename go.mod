@@ -6,8 +6,7 @@ require (
 	github.com/algorand/go-algorand-sdk v1.9.1
 	github.com/algorand/go-codec/codec v1.1.7
 	github.com/algorand/oapi-codegen v1.3.5-algorand5
-	github.com/deepmap/oapi-codegen v1.8.2 // indirect
-	github.com/getkin/kin-openapi v0.61.0
+	github.com/getkin/kin-openapi v0.3.1
 	github.com/google/uuid v1.1.1
 	github.com/labstack/echo-contrib v0.10.0
 	github.com/labstack/echo/v4 v4.2.1

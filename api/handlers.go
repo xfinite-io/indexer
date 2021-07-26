@@ -15,6 +15,7 @@ import (
 	"github.com/algorand/indexer/api/generated/common"
 	"github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/idb"
+	"github.com/google/uuid"
 )
 
 // ServerImplementation implements the handler interface used by the generated route definitions.
@@ -483,7 +484,7 @@ func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
 		Data.CouponId: out.coupon_id,
 		Data.CouponImages: out.coupon_assets,
 		Data.CouponTnc: out.coupon_tnc,
-		Data.UsageId: out.usage_id
+		Data.UsageId: out.usage_id,
 	}
 	return ctx.JSON(http.StatusOK, response)
 }

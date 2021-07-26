@@ -3050,34 +3050,34 @@ func (db *IndexerDb) GetSpecialAccounts() (idb.SpecialAccounts, error) {
 	return accounts, nil
 }
 
+type coupon_asset struct{
+                obj []string
+        }
+
+type redemptionRow struct{
+                amount float64
+                coupon_id string
+                coupon_code string
+                usage_id string
+                coupon_how_to_redeem string
+                coupon_discount float64
+                coupon_tnc string
+                coupon_details string
+                coupon_company string
+                coupon_expiry string
+                coupon_brand_logo string
+                coupon_brand_name string
+                coupon_assets []coupon_asset
+	}
+
 // GetRedemptions is a part of idb.IndexerDB
-func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) {
+func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (redemptionRow, error) {
 	query := `select redemption.note->'meta'->'amount' as amount, redemption.note->'meta'->'coupon_id' as coupon_id , redemption.note->'meta'->'coupon_code' as coupon_code, redemption.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , (coupon_assets.coupon_videos, coupon_assets.coupon_images) as coupon_assets from public.txn as redemption left join redemption.redemption_couponid as coupon_detail on cast(coupon_detail.id as varchar)=redemption.note->'meta'->>'coupon_id' inner join redemption.redemption_couponassets as coupon_assets on coupon_assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id where redemption.note_txid= ?;`
-	rows, err := db.Query(query, transaction_id)
+	rows, err := db.db.Query(query, transaction_id)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-
-	type coupon_asset struct{
-		obj []string
-	}
-
-	type redemptionRow struct{
-		amount float64
-		coupon_id string
-		coupon_code string
-		usage_id string
-		coupon_how_to_redeem string
-		coupon_discount float64
-		coupon_tnc string 
-		coupon_details string
-		coupon_company string
-		coupon_expiry string
-		coupon_brand_logo string
-		coupon_brand_name string 
-		coupon_assets []coupon_asset
-	}
 
 	var r_Row redemptionRow
 
@@ -3116,7 +3116,7 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 		r_Row.coupon_expiry = coupon_expiry
 		r_Row.coupon_brand_name = coupon_brand_name
 		r_Row.coupon_brand_logo = coupon_brand_logo
-		r_Row.coupon_assets = coupon_assets
+		r_Row.coupon_assets = append(r_Row.coupon_assets, coupon_assets)
 	}
 	return r_Row, nil
 }

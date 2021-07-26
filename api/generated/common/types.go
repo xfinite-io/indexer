@@ -941,10 +941,10 @@ type BlockResponse Block
 type GetRedemptionResponse struct {
 
 	// (empty)
-	Code *uint64 `json:"code,omitempty"`
+	Code uint64 `json:"code"`
 
 	// (empty)
-	Data *struct {
+	Data struct {
 
 		// (empty)
 		Amount *float32 `json:"amount,omitempty"`
@@ -991,7 +991,7 @@ type GetRedemptionResponse struct {
 
 		// (empty)
 		UsageId *string `json:"usage_id,omitempty"`
-	} `json:"data,omitempty"`
+	} `json:"data"`
 
 	// (empty)
 	Message string `json:"message"`

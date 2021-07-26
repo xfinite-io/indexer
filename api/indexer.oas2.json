@@ -2374,7 +2374,10 @@
           }
         },
         "required": [
-          "message"
+          "message",
+          "code",
+          "success",
+          "data"
         ]
       }
     }

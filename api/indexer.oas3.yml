@@ -511,6 +511,8 @@
                 }
               },
               "required": [
+                "code",
+                "data",
                 "message"
               ],
               "type": "object"

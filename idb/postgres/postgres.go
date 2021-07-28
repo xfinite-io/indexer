@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
+	//"encoding/json"
 
 	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
@@ -3053,19 +3054,22 @@ func (db *IndexerDb) GetSpecialAccounts() (idb.SpecialAccounts, error) {
 
 // GetRedemptions is a part of idb.IndexerDB
 func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (idb.RedemptionRow, error) {
-	query := `select redemption.note->'meta'->'amount' as amount, redemption.note->'meta'->'coupon_id' as coupon_id , redemption.note->'meta'->'coupon_code' as coupon_code, redemption.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , (coupon_assets.coupon_videos, coupon_assets.coupon_images) as coupon_assets from public.txn as redemption left join redemption.redemption_couponid as coupon_detail on cast(coupon_detail.id as varchar)=redemption.note->'meta'->>'coupon_id' inner join redemption.redemption_couponassets as coupon_assets on coupon_assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id where redemption.note_txid= ?;`
+	query := `select redemption.note->'meta'->'amount' as amount, redemption.note->'meta'->'coupon_id' as coupon_id , redemption.note->'meta'->'coupon_code' as coupon_code, redemption.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , coupon_assets.coupon_videos, coupon_assets.coupon_images from public.txn as redemption left join redemption.redemption_couponid as coupon_detail on cast(coupon_detail.id as varchar)=redemption.note->'meta'->>'coupon_id' inner join redemption.redemption_couponassets as coupon_assets on coupon_assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id where redemption.note_txid = $1;`
 	rows, err := db.db.Query(query, transaction_id)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
 
+	type CA struct{
+                CouponImages []string `json:"coupon_images"`
+		CouponVideos []string `json:"coupon_videos"`
+        }
+
 	var r_Row idb.RedemptionRow
 
 	for rows.Next() {
-		type coupon_asset struct{
-			obj []string
-		}
+		var coupon_asset CA
 		var (
 			amount float64
 			coupon_id string
@@ -3081,10 +3085,14 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 			coupon_brand_name string 
 			coupon_assets idb.Coupon_asset
 		)
-		if err := rows.Scan(&amount, &coupon_id, &coupon_code, &usage_id, &coupon_how_to_redeem, &coupon_discount, &coupon_tnc, &coupon_details, &coupon_company, &coupon_expiry, &coupon_brand_logo, &coupon_brand_name, &coupon_assets); err != nil {
+		if err := rows.Scan(&amount, &coupon_id, &coupon_code, &usage_id, &coupon_how_to_redeem, &coupon_discount, &coupon_tnc, &coupon_details, &coupon_company, &coupon_expiry, &coupon_brand_logo, &coupon_brand_name, pq.Array(&coupon_asset.CouponImages), pq.Array(&coupon_asset.CouponVideos)); err != nil {
 			return idb.RedemptionRow{}, err
 		}
-
+		//err := json.Unmarshal(coupon_asset, &coupon_assets[len(coupon_assets)-1])
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
+		coupon_assets = append(coupon_assets, coupon_asset)
 		r_Row.Amount = amount
 		r_Row.Coupon_id = coupon_id
 		r_Row.Coupon_code = coupon_code

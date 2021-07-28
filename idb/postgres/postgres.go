@@ -3054,7 +3054,22 @@ func (db *IndexerDb) GetSpecialAccounts() (idb.SpecialAccounts, error) {
 
 // GetRedemptions is a part of idb.IndexerDB
 func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (idb.RedemptionRow, error) {
-	query := `select redemption.note->'meta'->'amount' as amount, redemption.note->'meta'->'coupon_id' as coupon_id , redemption.note->'meta'->'coupon_code' as coupon_code, redemption.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , coupon_assets.coupon_videos, coupon_assets.coupon_images from public.txn as redemption left join redemption.redemption_couponid as coupon_detail on cast(coupon_detail.id as varchar)=redemption.note->'meta'->>'coupon_id' inner join redemption.redemption_couponassets as coupon_assets on coupon_assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id where redemption.note_txid = $1;`
+	cond_query := `SELECT exists (SELECT txn.note_txid FROM txn WHERE txn.note_txid = $1 LIMIT 1);`
+	c_rows, err := db.db.Query(cond_query, transaction_id)
+	var cond bool
+	for c_rows.Next() {
+		if err := c_rows.Scan(&cond); err != nil {
+			log.Fatal(err)
+		} 
+	}
+
+	var query string
+	if cond {
+		query = `select txn.note->'meta'->'amount' as amount, txn.note->'meta'->'coupon_id' as coupon_id , txn.note->'meta'->'coupon_code' as coupon_code, txn.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , assets.coupon_videos, assets.coupon_images from redemption.redemption_couponid as coupon_detail inner join redemption.redemption_couponassets as assets on assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id inner join txn as txn on (txn.note->'meta'->>'coupon_id')::uuid=coupon_detail.id where coupon_detail.id = ( select (note->'meta'->>'coupon_id')::uuid from txn  where note_txid= $1 ) ;`
+	} else {
+		query = `select redemption.amount as amount, redemption.coupon_id_id as coupon_id , redemption.coupon_code as coupon_code, redemption.usage_id as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , coupon_assets.coupon_videos, coupon_assets.coupon_images from redemption.redemption_redemption as redemption left join redemption.redemption_couponid as coupon_detail on coupon_detail.id=redemption.coupon_id_id inner join redemption.redemption_couponassets as coupon_assets on coupon_assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id where redemption.id= $1;`
+	}
+
 	rows, err := db.db.Query(query, transaction_id)
 	if err != nil {
 		log.Fatal(err)
@@ -3062,9 +3077,9 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 	defer rows.Close()
 
 	type CA struct{
-                CouponImages []string `json:"coupon_images"`
+        CouponImages []string `json:"coupon_images"`
 		CouponVideos []string `json:"coupon_videos"`
-        }
+    }
 
 	var r_Row idb.RedemptionRow
 
@@ -3085,7 +3100,7 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 			coupon_brand_name string 
 			coupon_assets idb.Coupon_asset
 		)
-		if err := rows.Scan(&amount, &coupon_id, &coupon_code, &usage_id, &coupon_how_to_redeem, &coupon_discount, &coupon_tnc, &coupon_details, &coupon_company, &coupon_expiry, &coupon_brand_logo, &coupon_brand_name, pq.Array(&coupon_asset.CouponImages), pq.Array(&coupon_asset.CouponVideos)); err != nil {
+		if err := rows.Scan(&amount, &coupon_id, &coupon_code, &usage_id, &coupon_how_to_redeem, &coupon_discount, &coupon_tnc, &coupon_details, &coupon_company, &coupon_expiry, &coupon_brand_logo, &coupon_brand_name, pq.Array(&coupon_asset.CouponVideos), pq.Array(&coupon_asset.CouponImages)); err != nil {
 			return idb.RedemptionRow{}, err
 		}
 		//err := json.Unmarshal(coupon_asset, &coupon_assets[len(coupon_assets)-1])

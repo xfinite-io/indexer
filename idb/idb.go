@@ -274,9 +274,9 @@ type ApplicationRow struct {
 }
 
 type Coupon_asset []struct{
-                CouponImages []string `json:"coupon_images"`
-		CouponVideos []string `json:"coupon_videos"`
-        }
+    CouponImages []string `json:"coupon_images"`
+	CouponVideos []string `json:"coupon_videos"`
+}
 
 type RedemptionRow struct{
                 Amount float64

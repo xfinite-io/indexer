@@ -647,6 +647,24 @@
           }
         }
       }
+    },
+    "/api/v3/rewards/get/balance": {
+      "get": {
+        "description": "Get balance from user_id",
+        "operationId": "getBalance",
+        "tags": ["search"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref":"#/responses/GetBalanceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -2396,6 +2414,43 @@
           "message",
           "code",
           "success",
+          "data"
+        ]
+      }
+    },
+    "GetBalanceResponse": {
+      "description": "This is getBalance api response structure",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "description": "(empty)",
+            "type": "bool"
+          },
+          "code": {
+            "description": "(empty)",
+            "type": "integer"
+          },
+          "message": {
+            "description": "(empty)",
+            "type": "string"
+          },
+          "data": {
+            "description": "(empty)",
+            "type": "object",
+            "properties": {
+              "balance": {
+                "description": "(empty)",
+                "type": "number"
+              }
+            },
+            "required": ["balance"]
+          }
+        },
+        "required": [
+          "success",
+          "code",
+          "message",
           "data"
         ]
       }

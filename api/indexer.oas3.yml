@@ -416,6 +416,44 @@
         },
         "description": "(empty)"
       },
+      "GetBalanceResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "(empty)",
+                  "properties": {
+                    "balance": {
+                      "description": "(empty)",
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "balance"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "data",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "This is getBalance api response structure"
+      },
       "GetRedemptionResponse": {
         "content": {
           "application/json": {
@@ -1855,6 +1893,20 @@
   },
   "openapi": "3.0.1",
   "paths": {
+    "/api/v3/rewards/get/balance": {
+      "get": {
+        "description": "Get balance from user_id",
+        "operationId": "getBalance",
+        "responses": {
+          "200": {
+            "content": {}
+          }
+        },
+        "tags": [
+          "search"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "makeHealthCheck",

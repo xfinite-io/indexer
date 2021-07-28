@@ -937,6 +937,23 @@ type AssetsResponse struct {
 // BlockResponse defines model for BlockResponse.
 type BlockResponse Block
 
+// GetBalanceResponse defines model for GetBalanceResponse.
+type GetBalanceResponse struct {
+
+	// (empty)
+	Code uint64 `json:"code"`
+
+	// (empty)
+	Data struct {
+
+		// (empty)
+		Balance float32 `json:"balance"`
+	} `json:"data"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
 // GetRedemptionResponse defines model for GetRedemptionResponse.
 type GetRedemptionResponse struct {
 

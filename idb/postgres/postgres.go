@@ -34,6 +34,7 @@ import (
 	"github.com/algorand/indexer/idb/migration"
 	"github.com/algorand/indexer/idb/postgres/internal/encoding"
 	"github.com/algorand/indexer/types"
+	"github.com/xfinite-io/indexer/utils"
 	"github.com/google/uuid"
 )
 

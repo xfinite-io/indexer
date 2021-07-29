@@ -3124,3 +3124,29 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 	}
 	return r_Row, nil
 }
+
+// GetBalance is a part of idb.IndexerDB
+func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.BalanceRow, error) {
+	data, err := utils.GetSecret("algo", user_id)
+	if err != nil {
+		address, err := utils.CreateUserAlgoAddress()
+		if err != nil {
+			return idb.BalanceRow{}, err
+		}
+	} else {
+		address := data.Data.PublicKey
+	}
+
+
+	query := `select (cast((select amount from balances."Balances" where user_id=$1) as numeric(20,0)) + (select amount from account_asset where addr=$2) as totalamount);`
+	rows, err := db.db.Query(query, user_id, address)
+	if err != nil {
+		return idb.BalanceRow{}, err
+	}
+
+	var B_Row idb.BalanceRow
+	if err := rows.Scan(&B_row.Balance); err != nil {
+		return idb.BalanceRow{}, err
+	}
+	return B_row, nil
+}

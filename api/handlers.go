@@ -16,6 +16,7 @@ import (
 	"github.com/algorand/indexer/api/generated/common"
 	"github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/idb"
+	"github.com/xfinite-io/indexer/utils"
 	"github.com/google/uuid"
 )
 
@@ -460,19 +461,23 @@ func (si *ServerImplementation) SearchForTransactions(ctx echo.Context, params g
 // GetRedemption provides redemption api to get coupon details 
 // (POST /redemption/api/v2/coupon/getRedemptions/transactionid)
 func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
+	_, err := ExtractTokenMetadata(ctx.Request())
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
 	var tx map[string]uuid.UUID
 	body, err := ioutil.ReadAll(ctx.Request().Body)
 	if err != nil {
-                badRequest(ctx, err.Error())
-        }
+        return badRequest(ctx, err.Error())
+    }
 	err = json.Unmarshal(body, &tx)
 	if err != nil {
-		badRequest(ctx, err.Error())
+		return badRequest(ctx, err.Error())
 	}
 	transaction_id := tx["transaction_id"]
 	out, err := si.db.GetRedemptions(ctx.Request().Context(), transaction_id)
 	if err != nil {
-		badRequest(ctx, err.Error())
+		return badRequest(ctx, err.Error())
 	}
 	
 	type dataStruc struct {
@@ -515,6 +520,26 @@ func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
 		Message: "data returned",
 	}
 	return ctx.JSON(http.StatusOK, response)
+}
+
+//GetBalance returns the balance amount of user
+// (GET /api/v3/rewards/get/balance)
+func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
+	metadata, err := ExtractTokenMetadata(ctx.Request())
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	out, err := si.db.GetBalance(ctx.Request().Context(), metadata.UserId)
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	response := generated.GetBalanceResponse{
+		Code: uint64(200),
+		Data: out,
+		Message: "Success"
+	}
 }
 
 ///////////////////

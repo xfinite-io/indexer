@@ -100,6 +100,7 @@ type IndexerDb interface {
 	GetBlock(ctx context.Context, round uint64, options GetBlockOptions) (blockHeader types.BlockHeader, transactions []TxnRow, err error)
 
 	GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (RedemptionRow, error)
+	GetBalance(ctx context.Context, user_id string) (BalanceRow, error)
 
 	// The next multiple functions return a channel with results as well as the latest round
 	// accounted.
@@ -293,6 +294,10 @@ type RedemptionRow struct{
                 Coupon_brand_name string
                 Coupon_assets Coupon_asset
 	}
+
+type BalanceRow struct {
+	Balance float32 `json:"balance"`
+}
 
 // IndexerDbOptions are the options common to all indexer backends.
 type IndexerDbOptions struct {

@@ -37,7 +37,7 @@ func init() {
 
 type AccessDetails struct {
 	AccessUuid string
-	UserId   int64
+	UserId   string
 }
 
 type TokenDetails struct {
@@ -50,7 +50,7 @@ type TokenDetails struct {
 }
 
 //Create token for fresh login
-func CreateToken(userid int64) (*TokenDetails, error) {
+func CreateToken(userid string) (*TokenDetails, error) {
 	td := &TokenDetails{}
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
 	td.AccessUuid = uuid.NewV4().String()
@@ -85,7 +85,7 @@ func CreateToken(userid int64) (*TokenDetails, error) {
 }
 
 //Save token in Redis database
-func CreateAuth(userid int64, td *TokenDetails) error {
+func CreateAuth(userid string, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
@@ -168,7 +168,7 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 }
 
 //Get auth details from Redis database
-func FetchAuth(authD *AccessDetails) (int64, error) {
+func FetchAuth(authD *AccessDetails) (string, error) {
 	userid, err := client.Get(authD.AccessUuid).Result()
 	if err != nil {
 		return 0, err
@@ -182,7 +182,7 @@ func FetchAuth(authD *AccessDetails) (int64, error) {
 
 
 //Delete auth refresh token from Redis database
-func DeleteAuth(givenUuid string) (int64,error) {
+func DeleteAuth(givenUuid string) (string,error) {
 	deleted, err := client.Del(givenUuid).Result()
 	if err != nil {
 		return 0, err

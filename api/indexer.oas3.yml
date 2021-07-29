@@ -578,6 +578,110 @@
         },
         "description": "(empty)"
       },
+      "GetTransactionHistoryResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "(empty)",
+                  "items": {
+                    "description": "(empty)",
+                    "properties": {
+                      "BalanceId": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "RewardId": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "amount": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "closing_balance": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "coin_id": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "createdAt": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "description": "(empty)",
+                        "type": "integer"
+                      },
+                      "guest_meta": {
+                        "description": "(empty)",
+                        "properties": {},
+                        "type": "object"
+                      },
+                      "id": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "meta": {
+                        "description": "(empty)",
+                        "properties": {},
+                        "type": "object"
+                      },
+                      "reward_type": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "description": "(empty)",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "BalanceId",
+                      "RewardId",
+                      "amount",
+                      "closing_balance",
+                      "coin_id",
+                      "createdAt",
+                      "created_at",
+                      "guest_meta",
+                      "id",
+                      "meta",
+                      "reward_type",
+                      "type",
+                      "updatedAt"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "data",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "This is getTransactionHistory api response structure"
+      },
       "HealthCheckResponse": {
         "content": {
           "application/json": {
@@ -1897,6 +2001,20 @@
       "get": {
         "description": "Get balance from user_id",
         "operationId": "getBalance",
+        "responses": {
+          "200": {
+            "content": {}
+          }
+        },
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/v3/rewards/get/transactions": {
+      "get": {
+        "description": "Get transaction history of an particular user_id",
+        "operationId": "getTransactionHistory",
         "responses": {
           "200": {
             "content": {}

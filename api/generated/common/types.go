@@ -1014,6 +1014,59 @@ type GetRedemptionResponse struct {
 	Message string `json:"message"`
 }
 
+// GetTransactionHistoryResponse defines model for GetTransactionHistoryResponse.
+type GetTransactionHistoryResponse struct {
+
+	// (empty)
+	Code uint64 `json:"code"`
+
+	// (empty)
+	Data []struct {
+
+		// (empty)
+		BalanceId string `json:"BalanceId"`
+
+		// (empty)
+		RewardId string `json:"RewardId"`
+
+		// (empty)
+		Amount string `json:"amount"`
+
+		// (empty)
+		ClosingBalance string `json:"closing_balance"`
+
+		// (empty)
+		CoinId string `json:"coin_id"`
+
+		// (empty)
+		CreatedAt string `json:"createdAt"`
+
+		// (empty)
+		CreatedAt uint64 `json:"created_at"`
+
+		// (empty)
+		GuestMeta map[string]interface{} `json:"guest_meta"`
+
+		// (empty)
+		Id string `json:"id"`
+
+		// (empty)
+		Meta map[string]interface{} `json:"meta"`
+
+		// (empty)
+		RewardType string `json:"reward_type"`
+
+		// (empty)
+		Type string `json:"type"`
+
+		// (empty)
+		UpdatedAt string `json:"updatedAt"`
+	} `json:"data"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
 // HealthCheckResponse defines model for HealthCheckResponse.
 type HealthCheckResponse HealthCheck
 

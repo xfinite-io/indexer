@@ -665,6 +665,24 @@
           }
         }
       }
+    },
+    "/api/v3/rewards/get/transactions": {
+      "get": {
+        "description": "Get transaction history of an particular user_id",
+        "operationId": "getTransactionHistory",
+        "tags": ["search"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -2445,6 +2463,109 @@
               }
             },
             "required": ["balance"]
+          }
+        },
+        "required": [
+          "success",
+          "code",
+          "message",
+          "data"
+        ]
+      }
+    },
+    "GetTransactionHistoryResponse": {
+      "description": "This is getTransactionHistory api response structure",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "description": "(empty)",
+            "type": "bool"
+          },
+          "code": {
+            "description": "(empty)",
+            "type": "integer"
+          },
+          "message": {
+            "description": "(empty)",
+            "type": "string"
+          },
+          "data": {
+            "description": "(empty)",
+            "type": "array",
+            "items": {
+              "description": "(empty)",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "BalanceId": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "amount": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "reward_type": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "closing_balance": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "created_at": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "RewardId": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "coin_id": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "meta": {
+                  "description": "(empty)",
+                  "type": "object"
+                },
+                "guest_meta": {
+                  "description": "(empty)",
+                  "type": "object"
+                },
+                "createdAt": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "BalanceId",
+                "amount",
+                "type",
+                "reward_type",
+                "closing_balance",
+                "created_at",
+                "RewardId",
+                "coin_id",
+                "meta",
+                "guest_meta",
+                "createdAt",
+                "updatedAt"
+              ]
+            }
           }
         },
         "required": [

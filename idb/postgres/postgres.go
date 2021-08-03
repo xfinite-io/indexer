@@ -3162,7 +3162,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 }
 
 // GetTransactionHistory is a part of idb.IndexerDB
-func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) ([]idb.TransactionHistoryRow, error) {
+func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.TransactionHistoryRows, error) {
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	if err != nil {
@@ -3181,7 +3181,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 		return idb.TransactionHistoryRow{}, err
 	} 
 
-	var TH_Row_Array []idb.TransactionHistoryRow 
+	var TH_Row_Array idb.TransactionHistoryRows 
 
 	var TH_Row idb.TransactionHistoryRow
 	

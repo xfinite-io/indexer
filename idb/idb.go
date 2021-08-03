@@ -316,6 +316,22 @@ type TransactionHistoryRow struct {
 	UpdatedAt string `json:"updatedAt"`
 }
 
+type TransactionHistoryRows []struct {
+	BalanceId string `json:"BalanceId"`
+	RewardId string `json:"RewardId"`
+	Amount string `json:"amount"`
+	ClosingBalance string `json:"closing_balance"`
+	CoinId string `json:"coin_id"`
+	CreatedAt string `json:"createdAt"`
+	Created uint64 `json:"created"`
+	GuestMeta map[string]interface{} `json:"guest_meta"`
+	Id string `json:"id"`
+	Meta map[string]interface{} `json:"meta"`
+	RewardType string `json:"reward_type"`
+	Type string `json:"type"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
 // IndexerDbOptions are the options common to all indexer backends.
 type IndexerDbOptions struct {
 	ReadOnly bool

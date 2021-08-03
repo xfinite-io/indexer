@@ -1,16 +1,16 @@
 package utils
 
 import (
-	"errors"
+	//"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/twinj/uuid"
-	"log"
+	//"log"
 	"net/http"
 	"os"
-	"strconv"
+	//"strconv"
 	"strings"
 	"time"
 )
@@ -19,6 +19,7 @@ import (
 var router = gin.Default()
 var client *redis.Client
 
+/*
 func init() {
 	//Initializing redis
 	dsn := os.Getenv("REDIS_DSN")
@@ -33,7 +34,7 @@ func init() {
 		panic(err)
 	}
 }
-
+*/
 
 type AccessDetails struct {
 	AccessUuid string
@@ -56,7 +57,7 @@ func CreateToken(userid string) (*TokenDetails, error) {
 	td.AccessUuid = uuid.NewV4().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	td.RefreshUuid = td.AccessUuid + "++" + strconv.Itoa(int(userid))
+	td.RefreshUuid = td.AccessUuid + "++" + userid
 
 
 	var err error
@@ -84,6 +85,7 @@ func CreateToken(userid string) (*TokenDetails, error) {
 	return td, nil
 }
 
+/*
 //Save token in Redis database
 func CreateAuth(userid string, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
@@ -100,7 +102,7 @@ func CreateAuth(userid string, td *TokenDetails) error {
 	}
 	return nil
 }
-
+*/
 
 //Extract token from http request
 func ExtractToken(r *http.Request) string {
@@ -155,8 +157,8 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 		if !ok {
 			return nil, err
 		}
-		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
-		if err != nil {
+		userId, ok := claims["user_id"].(string)
+		if !ok {
 			return nil, err
 		}
 		return &AccessDetails{
@@ -167,6 +169,7 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 	return nil, err
 }
 
+/*
 //Get auth details from Redis database
 func FetchAuth(authD *AccessDetails) (string, error) {
 	userid, err := client.Get(authD.AccessUuid).Result()
@@ -179,8 +182,9 @@ func FetchAuth(authD *AccessDetails) (string, error) {
 	}
 	return userID, nil
 }
+*/
 
-
+/*
 //Delete auth refresh token from Redis database
 func DeleteAuth(givenUuid string) (string,error) {
 	deleted, err := client.Del(givenUuid).Result()
@@ -211,7 +215,7 @@ func  DeleteTokens(authD *AccessDetails) error {
 	}
 	return nil
 }
-
+*/
 
 //Reference server implementation
 /*

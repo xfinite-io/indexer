@@ -16,7 +16,7 @@ import (
 	"github.com/algorand/indexer/api/generated/common"
 	"github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/idb"
-	"github.com/xfinite-io/indexer/utils"
+	"github.com/algorand/indexer/utils"
 	"github.com/google/uuid"
 )
 

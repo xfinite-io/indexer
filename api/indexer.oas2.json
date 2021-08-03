@@ -2521,7 +2521,7 @@
                   "description": "(empty)",
                   "type": "string"
                 },
-                "created_at": {
+                "created": {
                   "description": "(empty)",
                   "type": "integer"
                 },
@@ -2557,7 +2557,7 @@
                 "type",
                 "reward_type",
                 "closing_balance",
-                "created_at",
+                "created",
                 "RewardId",
                 "coin_id",
                 "meta",

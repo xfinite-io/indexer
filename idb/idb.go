@@ -307,7 +307,7 @@ type TransactionHistoryRow struct {
 	ClosingBalance string `json:"closing_balance"`
 	CoinId string `json:"coin_id"`
 	CreatedAt string `json:"createdAt"`
-	CreatedAt uint64 `json:"created_at"`
+	Created uint64 `json:"created"`
 	GuestMeta map[string]interface{} `json:"guest_meta"`
 	Id string `json:"id"`
 	Meta map[string]interface{} `json:"meta"`

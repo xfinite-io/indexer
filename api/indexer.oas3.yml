@@ -612,13 +612,13 @@
                         "description": "(empty)",
                         "type": "string"
                       },
+                      "created": {
+                        "description": "(empty)",
+                        "type": "integer"
+                      },
                       "createdAt": {
                         "description": "(empty)",
                         "type": "string"
-                      },
-                      "created_at": {
-                        "description": "(empty)",
-                        "type": "integer"
                       },
                       "guest_meta": {
                         "description": "(empty)",
@@ -653,8 +653,8 @@
                       "amount",
                       "closing_balance",
                       "coin_id",
+                      "created",
                       "createdAt",
-                      "created_at",
                       "guest_meta",
                       "id",
                       "meta",

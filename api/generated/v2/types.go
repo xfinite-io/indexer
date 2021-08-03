@@ -1039,10 +1039,10 @@ type GetTransactionHistoryResponse struct {
 		CoinId string `json:"coin_id"`
 
 		// (empty)
-		CreatedAt string `json:"createdAt"`
+		Created uint64 `json:"created"`
 
 		// (empty)
-		CreatedAt uint64 `json:"created_at"`
+		CreatedAt string `json:"createdAt"`
 
 		// (empty)
 		GuestMeta map[string]interface{} `json:"guest_meta"`

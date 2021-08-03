@@ -3190,7 +3190,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	var TH_Row idb.TransactionHistoryRow
 	
 	for rows.Next() {
-		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.CreatedAt, &TH_Row.RewardId, &TH_Row.createdAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
+		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.RewardId, &TH_Row.createdAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
 			return idb.TransactionHistoryRow{}, err
 		}
 		TH_Row_Array = append(TH_Row_Array, TH_Row)

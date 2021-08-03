@@ -3138,7 +3138,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 		//}
 	}
 
-	decoded_address, err := sdk_types.DecodeAddress(data)
+	decoded_address, err := sdk_types.DecodeAddress(data.Data)
 	if err != nil {
 		return idb.BalanceRow{}, err
 	}
@@ -3168,29 +3168,29 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	if err != nil {
 		//address, err := utils.CreateUserAlgoAddress()
 		//if err != nil {
-		return idb.TransactionHistoryRow{}, err
+		return idb.TransactionHistoryRows{}, err
 		//}
-	} 
+	}
 
-	fmt.Println(data)
+	fmt.Println(data.Data)
 
 	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."RewardId", transactions."createdAt", transactions."updatedAt", transactions.reward_type, transactions.meta, transactions.guest_meta, transactions."coin_id" from balances."Transactions" as transactions inn
 	er join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
 	rows, err := db.db.Query(query, user_id)
 	if err != nil {
-		return idb.TransactionHistoryRow{}, err
-	} 
+		return idb.TransactionHistoryRows{}, err
+	}
 
-	var TH_Row_Array idb.TransactionHistoryRows 
+	TH_Row_Array := idb.TransactionHistoryRows{}
 
-	var TH_Row idb.TransactionHistoryRow
-	
+	TH_Row := TH_Row_Array.TransactionHistoryRow.Data[0]
+
 	for rows.Next() {
 		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.RewardId, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
-			return idb.TransactionHistoryRow{}, err
+			return idb.TransactionHistoryRows{}, err
 		}
-		TH_Row_Array = append(TH_Row_Array, TH_Row)
+		TH_Row_Array.TransactionHistoryRow.Data = append(TH_Row_Array.TransactionHistoryRow.Data, TH_Row)
 	}
-	
+
 	return TH_Row_Array, nil
 }

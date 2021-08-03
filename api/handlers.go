@@ -551,14 +551,34 @@ func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context) error {
 		return badRequest(ctx, err.Error())
 	}
 
+	type dataStruc []struct {
+		BalanceId string `json:"BalanceId"`
+		RewardId string `json:"RewardId"`
+		Amount string `json:"amount"`
+		ClosingBalance string `json:"closing_balance"`
+		CoinId string `json:"coin_id"`
+		Created uint64 `json:"created"`
+		CreatedAt string `json:"createdAt"`
+		GuestMeta map[string]interface{} `json:"guest_meta`
+		Id string `json:"id"`
+		Meta map[string]interface{} `json:"meta"`
+		RewardType string `json:"reward_type"`
+		Type string `json:"type"`
+		UpdatedAt string `json:"updatedAt"`
+	}
+
+	data := generated.GetTransactionHistoryResponse{}
+
 	out, err := si.db.GetTransactionHistory(ctx.Request().Context(), metadata.UserId)
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}
 
+	data.Data = append(data.Data, out.TransactionHistoryRow.Data...)
+
 	response := generated.GetTransactionHistoryResponse{
 		Code: uint64(200),
-		Data: out,
+		Data: data.Data,
 		Message: "Success",
 	}
 	return ctx.JSON(http.StatusOK, response)

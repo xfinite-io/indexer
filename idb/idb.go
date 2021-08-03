@@ -101,7 +101,7 @@ type IndexerDb interface {
 
 	GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (RedemptionRow, error)
 	GetBalance(ctx context.Context, user_id string) (BalanceRow, error)
-	GetTransactionHistory(ctx context.Context, user_id string) ([]TransactionHistoryRow, error)
+	GetTransactionHistory(ctx context.Context, user_id string) (TransactionHistoryRows, error)
 
 	// The next multiple functions return a channel with results as well as the latest round
 	// accounted.
@@ -300,37 +300,9 @@ type BalanceRow struct {
 	Balance float32 `json:"balance"`
 }
 
-type TransactionHistoryRow struct {
-	BalanceId string `json:"BalanceId"`
-	RewardId string `json:"RewardId"`
-	Amount string `json:"amount"`
-	ClosingBalance string `json:"closing_balance"`
-	CoinId string `json:"coin_id"`
-	CreatedAt string `json:"createdAt"`
-	Created uint64 `json:"created"`
-	GuestMeta map[string]interface{} `json:"guest_meta"`
-	Id string `json:"id"`
-	Meta map[string]interface{} `json:"meta"`
-	RewardType string `json:"reward_type"`
-	Type string `json:"type"`
-	UpdatedAt string `json:"updatedAt"`
-}
-
-type TransactionHistoryRows []struct {
-	BalanceId string `json:"BalanceId"`
-	RewardId string `json:"RewardId"`
-	Amount string `json:"amount"`
-	ClosingBalance string `json:"closing_balance"`
-	CoinId string `json:"coin_id"`
-	CreatedAt string `json:"createdAt"`
-	Created uint64 `json:"created"`
-	GuestMeta map[string]interface{} `json:"guest_meta"`
-	Id string `json:"id"`
-	Meta map[string]interface{} `json:"meta"`
-	RewardType string `json:"reward_type"`
-	Type string `json:"type"`
-	UpdatedAt string `json:"updatedAt"`
-}
+type TransactionHistoryRows struct {
+	TransactionHistoryRow models.GetTransactionHistoryResponse
+} 
 
 // IndexerDbOptions are the options common to all indexer backends.
 type IndexerDbOptions struct {

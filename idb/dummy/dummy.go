@@ -114,7 +114,7 @@ func(db *dummyIndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Ba
 
 // GetTransactionHistory is a part of idb.IndexerDB
 func(db *dummyIndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.TransactionHistoryRows, error) {
-	return idb.TransactionHistoryRow{}, nil
+	return idb.TransactionHistoryRows{}, nil
 }
 
 // Health is part of idb.IndexerDB

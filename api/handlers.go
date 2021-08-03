@@ -530,7 +530,7 @@ func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
 		return badRequest(ctx, err.Error())
 	}
 
-	out, err := si.db.GetBalance(ctx.Request().Context(), metadata.UserId)
+	out, err := si.db.GetBalance(ctx.Request().Context(), metadata)
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}
@@ -569,7 +569,7 @@ func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context) error {
 
 	data := generated.GetTransactionHistoryResponse{}
 
-	out, err := si.db.GetTransactionHistory(ctx.Request().Context(), metadata.UserId)
+	out, err := si.db.GetTransactionHistory(ctx.Request().Context(), metadata)
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}

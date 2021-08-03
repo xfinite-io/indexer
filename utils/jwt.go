@@ -146,27 +146,24 @@ func TokenValid(r *http.Request) error {
 
 
 //Extract token metadata
-func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
+func ExtractTokenMetadata(r *http.Request) (string, error) {
 	token, err := VerifyToken(r)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		accessUuid, ok := claims["access_uuid"].(string)
-		if !ok {
-			return nil, err
-		}
+		//accessUuid, ok := claims["access_uuid"].(string)
+		//if !ok {
+		//	return nil, err
+		//}
 		userId, ok := claims["user_id"].(string)
 		if !ok {
-			return nil, err
+			return "", err
 		}
-		return &AccessDetails{
-			AccessUuid: accessUuid,
-			UserId:   userId,
-		}, nil
+		return userId, nil
 	}
-	return nil, err
+	return "", err
 }
 
 /*

@@ -3131,14 +3131,17 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.BalanceRow, error) {
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
+	var address string
 	if err != nil {
-		//address, err := utils.CreateUserAlgoAddress()
-		//if err != nil {
-		return idb.BalanceRow{}, err
-		//}
+		address, err = utils.CreateUserAlgoAddress()
+		if err != nil {
+			return idb.BalanceRow{}, err
+		}
+	} else {
+		address = data.Data
 	}
 
-	decoded_address, err := sdk_types.DecodeAddress(data.Data)
+	decoded_address, err := sdk_types.DecodeAddress(address)
 	if err != nil {
 		return idb.BalanceRow{}, err
 	}
@@ -3165,14 +3168,17 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.TransactionHistoryRows, error) {
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
+	var address string
 	if err != nil {
-		//address, err := utils.CreateUserAlgoAddress()
-		//if err != nil {
-		return idb.TransactionHistoryRows{}, err
-		//}
+		address, err = utils.CreateUserAlgoAddress()
+		if err != nil {
+			return idb.TransactionHistoryRows{}, err
+		}
+	} else {
+		address = data.Data
 	}
 
-	fmt.Println(data.Data)
+	fmt.Println(address)
 
 	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."RewardId", transactions."createdAt", transactions."updatedAt", transactions.reward_type, transactions.meta, transactions.guest_meta, transactions."coin_id" from balances."Transactions" as transactions inn
 	er join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`

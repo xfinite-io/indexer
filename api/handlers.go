@@ -538,7 +538,7 @@ func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
 	response := generated.GetBalanceResponse{
 		Code: uint64(200),
 		Data: out,
-		Message: "Success"
+		Message: "Success",
 	}
 }
 
@@ -558,7 +558,7 @@ func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context) error {
 	response := generated.GetTransactionHistoryResponse{
 		Code: uint64(200),
 		Data: out,
-		Message: "Success"
+		Message: "Success",
 	}
 }
 

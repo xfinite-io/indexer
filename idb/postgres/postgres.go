@@ -3132,12 +3132,12 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	if err != nil {
-		address, err := utils.CreateUserAlgoAddress()
-		if err != nil {
-			return idb.BalanceRow{}, err
-		}
+		//address, err := utils.CreateUserAlgoAddress()
+		//if err != nil {
+		return idb.BalanceRow{}, err
+		//}
 	} else {
-		address := data.Data.PublicKey
+		address := data
 	}
 
 	decoded_address, err := sdk_types.DecodeAddress(address)
@@ -3152,7 +3152,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 		return idb.BalanceRow{}, err
 	}
 
-	var B_Row idb.BalanceRow
+	var B_row idb.BalanceRow
 
 	for rows.Next(){
 		if err := rows.Scan(&B_row.Balance); err != nil {
@@ -3164,16 +3164,16 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 }
 
 // GetTransactionHistory is a part of idb.IndexerDB
-func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.BalanceRow, error) {
+func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.TransactionHistoryRow, error) {
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	if err != nil {
-		address, err := utils.CreateUserAlgoAddress()
-		if err != nil {
-			return idb.BalanceRow{}, err
-		}
+		//address, err := utils.CreateUserAlgoAddress()
+		//if err != nil {
+		return idb.TransactionHistoryRow{}, err
+		//}
 	} else {
-		address := data.Data.PublicKey
+		address := data
 	}
 
 	fmt.Println(address)
@@ -3182,7 +3182,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	er join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
 	rows, err := db.db.Query(query, user_id)
 	if err != nil {
-		return 
+		return idb.TransactionHistoryRow{}, err
 	} 
 
 	var TH_Row_Array []idb.TransactionHistoryRow
@@ -3190,7 +3190,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	var TH_Row idb.TransactionHistoryRow
 	
 	for rows.Next() {
-		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.RewardId, &TH_Row.createdAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
+		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.RewardId, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
 			return idb.TransactionHistoryRow{}, err
 		}
 		TH_Row_Array = append(TH_Row_Array, TH_Row)

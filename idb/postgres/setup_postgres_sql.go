@@ -17,6 +17,14 @@ header jsonb NOT NULL
 -- efficient since there is such a high correlation between round and time.
 CREATE INDEX IF NOT EXISTS block_header_time ON block_header (realtime);
 
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TABLE IF NOT EXISTS txn (
 round bigint NOT NULL,
 intra smallint NOT NULL,
@@ -29,8 +37,16 @@ note_type VARCHAR NOT NULL,
 note_txid UUID NOT NULL,
 note jsonb NOT NULL,
 extra jsonb,
+created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 PRIMARY KEY ( round, intra )
 );
+
+CREATE TRIGGER set_timestamp
+BEFORE
+UPDATE ON txn
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
 
 -- For transaction lookup
 CREATE INDEX IF NOT EXISTS txn_by_tixid ON txn ( txid );

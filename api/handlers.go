@@ -542,6 +542,26 @@ func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
 	}
 }
 
+//GetTransactionHistory returns the transaction history of the user
+// (GET /api/v3/rewards/get/transactions)
+func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context) error {
+	metadata, err := ExtractTokenMetadata(ctx.Request())
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	out, err := si.db.GetTransactionHistory(ctx.Request().Context(), metadata.UserId)
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	response := generated.GetTransactionHistoryResponse{
+		Code: uint64(200),
+		Data: out,
+		Message: "Success"
+	}
+}
+
 ///////////////////
 // Error Helpers //
 ///////////////////

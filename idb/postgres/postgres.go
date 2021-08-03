@@ -20,6 +20,7 @@ import (
 	"time"
 	"unicode/utf8"
 	//"encoding/json"
+	"crypto/sha256"
 
 	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
@@ -3128,7 +3129,8 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 
 // GetBalance is a part of idb.IndexerDB
 func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.BalanceRow, error) {
-	data, err := utils.GetSecret("algo", user_id)
+	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
+	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	if err != nil {
 		address, err := utils.CreateUserAlgoAddress()
 		if err != nil {
@@ -3138,16 +3140,61 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 		address := data.Data.PublicKey
 	}
 
+	decoded_address, err := sdk_types.DecodeAddress(address)
+	if err != nil {
+		return idb.BalanceRow{}, err
+	}
 
-	query := `select (cast((select amount from balances."Balances" where user_id=$1) as numeric(20,0)) + (select amount from account_asset where addr=$2) as totalamount);`
-	rows, err := db.db.Query(query, user_id, address)
+
+	query := `select (select amount from balances."Balances" where user_id=$1) + (select amount from account_asset where addr=$2) as totalamount;`
+	rows, err := db.db.Query(query, user_id, decoded_address)
 	if err != nil {
 		return idb.BalanceRow{}, err
 	}
 
 	var B_Row idb.BalanceRow
-	if err := rows.Scan(&B_row.Balance); err != nil {
-		return idb.BalanceRow{}, err
+
+	for rows.Next(){
+		if err := rows.Scan(&B_row.Balance); err != nil {
+			return idb.BalanceRow{}, err
+		}
 	}
+
 	return B_row, nil
+}
+
+// GetTransactionHistory is a part of idb.IndexerDB
+func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.BalanceRow, error) {
+	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
+	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
+	if err != nil {
+		address, err := utils.CreateUserAlgoAddress()
+		if err != nil {
+			return idb.BalanceRow{}, err
+		}
+	} else {
+		address := data.Data.PublicKey
+	}
+
+	fmt.Println(address)
+
+	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."RewardId", transactions."createdAt", transactions."updatedAt", transactions.reward_type, transactions.meta, transactions.guest_meta, transactions."coin_id" from balances."Transactions" as transactions inn
+	er join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
+	rows, err := db.db.Query(query, user_id)
+	if err != nil {
+		return 
+	} 
+
+	var TH_Row_Array []idb.TransactionHistoryRow
+
+	var TH_Row idb.TransactionHistoryRow
+	
+	for rows.Next() {
+		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.CreatedAt, &TH_Row.RewardId, &TH_Row.createdAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
+			return idb.TransactionHistoryRow{}, err
+		}
+		TH_Row_Array = append(TH_Row_Array, TH_Row)
+	}
+	
+	return TH_Row_Array, nil
 }

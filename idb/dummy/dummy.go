@@ -107,6 +107,16 @@ func(db *dummyIndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid
 	return idb.RedemptionRow{}, nil
 }
 
+// GetBalance is a part of idb.IndexerDB
+func(db *dummyIndexerDb) GetBalance(ctx context.Context, user_id string) (idb.BalanceRow, error) {
+	return idb.BalanceRow{}, nil
+}
+
+// GetTransactionHistory is a part of idb.IndexerDB
+func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.BalanceRow, error) {
+	return idb.TransactionHistoryRow{}, nil
+}
+
 // Health is part of idb.IndexerDB
 func (db *dummyIndexerDb) Health() (state idb.Health, err error) {
 	return idb.Health{}, nil

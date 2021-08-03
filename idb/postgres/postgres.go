@@ -3136,11 +3136,9 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 		//if err != nil {
 		return idb.BalanceRow{}, err
 		//}
-	} else {
-		address := data
 	}
 
-	decoded_address, err := sdk_types.DecodeAddress(address)
+	decoded_address, err := sdk_types.DecodeAddress(data)
 	if err != nil {
 		return idb.BalanceRow{}, err
 	}
@@ -3172,11 +3170,9 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 		//if err != nil {
 		return idb.TransactionHistoryRow{}, err
 		//}
-	} else {
-		address := data
-	}
+	} 
 
-	fmt.Println(address)
+	fmt.Println(data)
 
 	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."RewardId", transactions."createdAt", transactions."updatedAt", transactions.reward_type, transactions.meta, transactions.guest_meta, transactions."coin_id" from balances."Transactions" as transactions inn
 	er join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
@@ -3185,7 +3181,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 		return idb.TransactionHistoryRow{}, err
 	} 
 
-	var TH_Row_Array []idb.TransactionHistoryRow
+	var TH_Row_Array []idb.TransactionHistoryRow `json:"data"`
 
 	var TH_Row idb.TransactionHistoryRow
 	

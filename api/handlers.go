@@ -461,7 +461,7 @@ func (si *ServerImplementation) SearchForTransactions(ctx echo.Context, params g
 // GetRedemption provides redemption api to get coupon details 
 // (POST /redemption/api/v2/coupon/getRedemptions/transactionid)
 func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
-	_, err := ExtractTokenMetadata(ctx.Request())
+	_, err := utils.ExtractTokenMetadata(ctx.Request())
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}
@@ -525,7 +525,7 @@ func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
 //GetBalance returns the balance amount of user
 // (GET /api/v3/rewards/get/balance)
 func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
-	metadata, err := ExtractTokenMetadata(ctx.Request())
+	metadata, err := utils.ExtractTokenMetadata(ctx.Request())
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}
@@ -540,12 +540,13 @@ func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
 		Data: out,
 		Message: "Success",
 	}
+	return ctx.JSON(http.StatusOK, response)
 }
 
 //GetTransactionHistory returns the transaction history of the user
 // (GET /api/v3/rewards/get/transactions)
 func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context) error {
-	metadata, err := ExtractTokenMetadata(ctx.Request())
+	metadata, err := utils.ExtractTokenMetadata(ctx.Request())
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}
@@ -560,6 +561,7 @@ func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context) error {
 		Data: out,
 		Message: "Success",
 	}
+	return ctx.JSON(http.StatusOK, response)
 }
 
 ///////////////////

@@ -101,7 +101,7 @@ type IndexerDb interface {
 
 	GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (RedemptionRow, error)
 	GetBalance(ctx context.Context, user_id string) (BalanceRow, error)
-	GetTransactionHistory(ctx context.Context, user_id string) (TransactionHistoryRow, error)
+	GetTransactionHistory(ctx context.Context, user_id string) ([]TransactionHistoryRow, error)
 
 	// The next multiple functions return a channel with results as well as the latest round
 	// accounted.

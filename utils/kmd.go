@@ -6,6 +6,8 @@ import (
 
 	"github.com/algorand/go-algorand-sdk/client/kmd"
 	"github.com/algorand/go-algorand-sdk/types"
+	"github.com/algorand/go-algorand-sdk/crypto"
+    	"github.com/algorand/go-algorand-sdk/mnemonic"
 )
 
 // These constants represent the kmdd REST endpoint and the corresponding API
@@ -48,4 +50,18 @@ func CreateUserAlgoAddress() (string, error) {
 		return "", err
 	}
 	return genResponse.Address, nil
+}
+
+func CreateUserStandaloneAccount() (string, error) {
+	account := crypto.GenerateAccount()
+	passphrase, err := mnemonic.FromPrivateKey(account.PrivateKey)
+
+	if err != nil {
+		fmt.Printf("Error creating transaction: %s\n", err)
+		return "", err
+	} else {
+		fmt.Printf("My address: %s\n", account.Address)
+		fmt.Printf("My passphrase: %s\n", passphrase)
+	}
+	return account.Address.String(), nil
 }

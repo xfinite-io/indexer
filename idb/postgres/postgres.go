@@ -3067,7 +3067,7 @@ func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID
 
 	var query string
 	if cond {
-		query = `select txn.note->'meta'->'amount' as amount, txn.note->'meta'->'coupon_id' as coupon_id , txn.note->'meta'->'coupon_code' as coupon_code, txn.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , assets.coupon_videos, assets.coupon_images from redemption.redemption_couponid as coupon_detail inner join redemption.redemption_couponassets as assets on assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id inner join txn as txn on (txn.note->'meta'->>'coupon_id')::uuid=coupon_detail.id where coupon_detail.id = ( select (note->'meta'->>'coupon_id')::uuid from txn  where note_txid= $1 ) ;`
+		query = `select txn.note->'meta'->'amount' as amount, txn.note->'meta'->'coupon_id' as coupon_id , txn.note->'meta'->'coupon_code' as coupon_code, txn.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , assets.coupon_videos, assets.coupon_images from redemption.redemption_couponid as coupon_detail inner join redemption.redemption_couponassets as assets on assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id inner join txn as txn on (txn.note->'meta'->>'coupon_id')::uuid=coupon_detail.id where coupon_detail.id = ( select (note->'meta'->>'coupon_id')::uuid from txn  where note_txid= $1 limit 1 ) ;`
 	} else {
 		query = `select redemption.amount as amount, redemption.coupon_id_id as coupon_id , redemption.coupon_code as coupon_code, redemption.usage_id as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , coupon_assets.coupon_videos, coupon_assets.coupon_images from redemption.redemption_redemption as redemption left join redemption.redemption_couponid as coupon_detail on coupon_detail.id=redemption.coupon_id_id inner join redemption.redemption_couponassets as coupon_assets on coupon_assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id where redemption.id= $1;`
 	}
@@ -3133,7 +3133,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	var address string
 	if err != nil {
-		address, err = utils.CreateUserAlgoAddress()
+		address, err = utils.CreateUserStandaloneAccount()
 		if err != nil {
 			return idb.BalanceRow{}, err
 		}
@@ -3147,18 +3147,25 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 	}
 
 
-	query := `select (select amount from balances."Balances" where user_id=$1) + (select amount from account_asset where addr=$2) as totalamount;`
-	rows, err := db.db.Query(query, user_id, decoded_address)
+	query := `select (select amount from balances."Balances" where user_id=$1) + (select amount from account_asset where exists (select amount from account_asset where addr=$2) and addr=$2) as totalamount;`
+	rows, err := db.db.Query(query, user_id, decoded_address.String())
 	if err != nil {
 		return idb.BalanceRow{}, err
 	}
 
-	var B_row idb.BalanceRow
+	B_row := idb.BalanceRow{}
+
+	var rb interface{}
 
 	for rows.Next(){
-		if err := rows.Scan(&B_row.Balance); err != nil {
+		if err := rows.Scan(&rb); err != nil {
 			return idb.BalanceRow{}, err
 		}
+	}
+	if rb != nil {
+		B_row.Balance = rb.(float32)
+	} else {
+		B_row.Balance = float32(0)
 	}
 
 	return B_row, nil
@@ -3170,7 +3177,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	var address string
 	if err != nil {
-		address, err = utils.CreateUserAlgoAddress()
+		address, err = utils.CreateUserStandaloneAccount()
 		if err != nil {
 			return idb.TransactionHistoryRows{}, err
 		}
@@ -3180,8 +3187,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 
 	fmt.Println(address)
 
-	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."RewardId", transactions."createdAt", transactions."updatedAt", transactions.reward_type, transactions.meta, transactions.guest_meta, transactions."coin_id" from balances."Transactions" as transactions inn
-	er join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
+	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."RewardId", transactions."createdAt", transactions."updatedAt", transactions.reward_type, transactions.meta, transactions.guest_meta, transactions."coin_id" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
 	rows, err := db.db.Query(query, user_id)
 	if err != nil {
 		return idb.TransactionHistoryRows{}, err

@@ -119,13 +119,16 @@ func ExtractToken(r *http.Request) string {
 // keyFunc will receive the parsed token and should return the key for validating.
 func VerifyToken(r *http.Request) (*jwt.Token, error) {
 	tokenString := ExtractToken(r)
+	fmt.Println(tokenString)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("ACCESS_SECRET")), nil
+		return []byte("zHdguH0VPpPTJzCftRZelObX"), nil
 	})
 	if err != nil {
+		fmt.Println("token not verified\n")
+		fmt.Println(token)
 		return nil, err
 	}
 	return token, nil
@@ -159,10 +162,12 @@ func ExtractTokenMetadata(r *http.Request) (string, error) {
 		//}
 		userId, ok := claims["user_id"].(string)
 		if !ok {
+			fmt.Println("userid not valid")
 			return "", err
 		}
 		return userId, nil
 	}
+	fmt.Println("claims invalid")
 	return "", err
 }
 

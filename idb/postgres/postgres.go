@@ -3148,7 +3148,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 
 
 	query := `select (select amount from balances."Balances" where user_id=$1) + (select amount from account_asset where exists (select amount from account_asset where addr=$2) and addr=$2) as totalamount;`
-	rows, err := db.db.Query(query, user_id, decoded_address.String())
+	rows, err := db.db.Query(query, user_id, decoded_address[:])
 	if err != nil {
 		return idb.BalanceRow{}, err
 	}

@@ -281,6 +281,9 @@ func (db *IndexerDb) commitBlock(tx *sql.Tx, round uint64, timestamp int64, rewa
 
 	for _, cb := range(db.txcrows){
 		_, err := tx.Exec(`INSERT INTO txn_closingbalance (note_txid, receiver_closingbalance, sender_closingbalance, assetid, receiver_addr, sender_addr) VALUES $1, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $3) + $5, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $4) - $5, $2, $3, $4`, cb[0], cb[1], cb[2], cb[3])
+		if err != nil {
+			return fmt.Errorf("during insert in txn_closingbalance: %v", err)
+		}
 	}
 
 	var blockHeader types.BlockHeader

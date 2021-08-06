@@ -142,6 +142,16 @@ CREATE TABLE IF NOT EXISTS account_app (
   PRIMARY KEY (addr, app)
 );
 
+-- For storing per-transaction closing balance
+CREATE TABLE IF NOT EXISTS txn_closingbalance (
+  note_txid UUID NOT NULL primary key, 
+  receiver_closingbalance numeric(20) NOT NULL, 
+  sender_closingbalance numeric(20) NOT NULL, 
+  assetid bigint NOT NULL, 
+  receiver_addr bytea NOT NULL, 
+  sender_addr bytea NOT NULL
+);
+
 -- For account lookup
 CREATE INDEX IF NOT EXISTS account_app_by_addr ON account_app ( addr );
 

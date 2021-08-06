@@ -192,6 +192,7 @@ func (db *IndexerDb) Reset() (err error) {
 func (db *IndexerDb) StartBlock() (err error) {
 	db.txrows = make([][]interface{}, 0, 6000)
 	db.txprows = make([][]interface{}, 0, 10000)
+	db.txcrows = make([][]interface{}, 0, 6000)
 	return nil
 }
 
@@ -202,6 +203,10 @@ func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, ass
 	txid := crypto.TransactionIDString(txn.Txn)
 	tx := []interface{}{round, intra, txtypeenum, assetid, txid[:], txnbytes, string(jsonbytes), note_type, note_txid, note}
 	db.txrows = append(db.txrows, tx)
+	if txn.Txn.Type == "axfer" {
+		cb := []interface{}{note_txid, assetid, txn.Txn.AssetReceiver[:], txn.Txn.AssetSender[:], txn.Txn.AssetAmount}
+		db.txcrows = append(db.txcrows, cb)
+	}
 	for _, paddr := range participation {
 		txp := []interface{}{paddr, round, intra}
 		db.txprows = append(db.txprows, txp)
@@ -274,12 +279,17 @@ func (db *IndexerDb) commitBlock(tx *sql.Tx, round uint64, timestamp int64, rewa
 		return fmt.Errorf("during addtxp close %v", err)
 	}
 
+	for _, cb := range(db.txcrows){
+		_, err := tx.Exec(`INSERT INTO txn_closingbalance (note_txid, receiver_closingbalance, sender_closingbalance, assetid, receiver_addr, sender_addr) VALUES $1, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $3) + $5, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $4) - $5, $2, $3, $4`, cb[0], cb[1], cb[2], cb[3])
+	}
+
 	var blockHeader types.BlockHeader
 	err = msgpack.Decode(headerbytes, &blockHeader)
 	if err != nil {
 		return fmt.Errorf("decode header %v", err)
 	}
 	headerjson := encoding.EncodeJSON(blockHeader)
+	
 	_, err = tx.Exec(`INSERT INTO block_header (round, realtime, rewardslevel, header) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING`, round, time.Unix(timestamp, 0).UTC(), rewardslevel, headerjson)
 	if err != nil {
 		return fmt.Errorf("put block_header %v    %#v", err, err)
@@ -297,6 +307,7 @@ func (db *IndexerDb) CommitBlock(round uint64, timestamp int64, rewardslevel uin
 
 	db.txrows = nil
 	db.txprows = nil
+	db.txcrows = nil
 
 	if err != nil {
 		return fmt.Errorf("CommitBlock(): %v", err)

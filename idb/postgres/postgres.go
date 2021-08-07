@@ -101,6 +101,7 @@ type IndexerDb struct {
 	// state for StartBlock/AddTransaction/CommitBlock
 	txrows  [][]interface{}
 	txprows [][]interface{}
+	txcrows [][]interface{}
 
 	migration *migration.Migration
 
@@ -204,7 +205,7 @@ func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, ass
 	tx := []interface{}{round, intra, txtypeenum, assetid, txid[:], txnbytes, string(jsonbytes), note_type, note_txid, note}
 	db.txrows = append(db.txrows, tx)
 	if txn.Txn.Type == "axfer" {
-		cb := []interface{}{note_txid, assetid, txn.Txn.AssetReceiver[:], txn.Txn.AssetSender[:], txn.Txn.AssetAmount}
+		cb := []interface{}{note_txid, assetid, txn.Txn.AssetReceiver[:], txn.Txn.Sender[:], txn.Txn.AssetAmount}
 		db.txcrows = append(db.txcrows, cb)
 	}
 	for _, paddr := range participation {
@@ -280,7 +281,7 @@ func (db *IndexerDb) commitBlock(tx *sql.Tx, round uint64, timestamp int64, rewa
 	}
 
 	for _, cb := range(db.txcrows){
-		_, err := tx.Exec(`INSERT INTO txn_closingbalance (note_txid, receiver_closingbalance, sender_closingbalance, assetid, receiver_addr, sender_addr) VALUES $1, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $3) + $5, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $4) - $5, $2, $3, $4`, cb[0], cb[1], cb[2], cb[3])
+		_, err := tx.Exec(`INSERT INTO txn_closingbalance (note_txid, receiver_closingbalance, sender_closingbalance, assetid, receiver_addr, sender_addr) VALUES ($1, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $3) + $5, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $4) - $5, $2, $3, $4)`, cb[0], cb[1], cb[2], cb[3], cb[4])
 		if err != nil {
 			return fmt.Errorf("during insert in txn_closingbalance: %v", err)
 		}

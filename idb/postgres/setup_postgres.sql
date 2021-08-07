@@ -141,8 +141,8 @@ CREATE TABLE IF NOT EXISTS account_app (
 -- For storing per-transaction closing balance
 CREATE TABLE IF NOT EXISTS txn_closingbalance (
   note_txid UUID NOT NULL primary key, 
-  receiver_closingbalance numeric(20) NOT NULL, 
-  sender_closingbalance numeric(20) NOT NULL, 
+  receiver_closingbalance numeric(20), 
+  sender_closingbalance numeric(20), 
   assetid bigint NOT NULL, 
   receiver_addr bytea NOT NULL, 
   sender_addr bytea NOT NULL
@@ -164,3 +164,14 @@ OPTIONS (user 'xfinite@redemptions-staging', password 'Xinaam@123');
 CREATE SCHEMA redemption;
 
 IMPORT FOREIGN SCHEMA public FROM SERVER redemptions INTO redemption;
+
+-- Adding Rewards table via foreign data wrapper
+CREATE SERVER balances FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host 'reward-engine-stagin.postgres.database.azure.com', dbname 'postgres', port '5432' );
+
+CREATE USER MAPPING FOR CURRENT_USER
+SERVER balances
+OPTIONS (user 'xfinite@reward-engine-stagin', password 'Xinaam@123');
+
+CREATE SCHEMA balances;
+
+IMPORT FOREIGN SCHEMA public FROM SERVER balances INTO balances;

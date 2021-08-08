@@ -596,10 +596,6 @@
                         "description": "(empty)",
                         "type": "string"
                       },
-                      "RewardId": {
-                        "description": "(empty)",
-                        "type": "string"
-                      },
                       "amount": {
                         "description": "(empty)",
                         "type": "string"
@@ -620,21 +616,7 @@
                         "description": "(empty)",
                         "type": "string"
                       },
-                      "guest_meta": {
-                        "description": "(empty)",
-                        "properties": {},
-                        "type": "object"
-                      },
                       "id": {
-                        "description": "(empty)",
-                        "type": "string"
-                      },
-                      "meta": {
-                        "description": "(empty)",
-                        "properties": {},
-                        "type": "object"
-                      },
-                      "reward_type": {
                         "description": "(empty)",
                         "type": "string"
                       },
@@ -649,16 +631,12 @@
                     },
                     "required": [
                       "BalanceId",
-                      "RewardId",
                       "amount",
                       "closing_balance",
                       "coin_id",
                       "created",
                       "createdAt",
-                      "guest_meta",
                       "id",
-                      "meta",
-                      "reward_type",
                       "type",
                       "updatedAt"
                     ],

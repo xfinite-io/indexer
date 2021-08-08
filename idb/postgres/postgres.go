@@ -3202,7 +3202,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 
 	fmt.Println(address)
 
-	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."RewardId", transactions."createdAt", transactions."updatedAt", transactions.reward_type, transactions.meta, transactions.guest_meta, transactions."coin_id" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
+	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt", transactions."coin_id" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
 	rows, err := db.db.Query(query, user_id)
 	if err != nil {
 		return idb.TransactionHistoryRows{}, err
@@ -3213,9 +3213,6 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 
 		// (empty)
 		BalanceId string `json:"BalanceId"`
-
-		// (empty)
-		RewardId sql.NullString `json:"RewardId"`
 
 		// (empty)
 		Amount string `json:"amount"`
@@ -3233,16 +3230,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 		CreatedAt string `json:"createdAt"`
 
 		// (empty)
-		GuestMeta map[string]interface{} `json:"guest_meta"`
-
-		// (empty)
 		Id string `json:"id"`
-
-		// (empty)
-		Meta map[string]interface{} `json:"meta"`
-
-		// (empty)
-		RewardType sql.NullString `json:"reward_type"`
 
 		// (empty)
 		Type string `json:"type"`
@@ -3255,7 +3243,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	fmt.Println(TH_Row)
 
 	for rows.Next() {
-		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.RewardId, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
+		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &TH_Row.CoinId); err != nil {
 			return idb.TransactionHistoryRows{}, err
 		}
 		if TH_Row.Id != "" {

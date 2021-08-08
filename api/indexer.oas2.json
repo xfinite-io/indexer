@@ -2513,10 +2513,6 @@
                   "description": "(empty)",
                   "type": "string"
                 },
-                "reward_type": {
-                  "description": "(empty)",
-                  "type": "string"
-                },
                 "closing_balance": {
                   "description": "(empty)",
                   "type": "string"
@@ -2525,21 +2521,9 @@
                   "description": "(empty)",
                   "type": "integer"
                 },
-                "RewardId": {
-                  "description": "(empty)",
-                  "type": "string"
-                },
                 "coin_id": {
                   "description": "(empty)",
                   "type": "string"
-                },
-                "meta": {
-                  "description": "(empty)",
-                  "type": "object"
-                },
-                "guest_meta": {
-                  "description": "(empty)",
-                  "type": "object"
                 },
                 "createdAt": {
                   "description": "(empty)",

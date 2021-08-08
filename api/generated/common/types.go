@@ -1027,9 +1027,6 @@ type GetTransactionHistoryResponse struct {
 		BalanceId string `json:"BalanceId"`
 
 		// (empty)
-		RewardId string `json:"RewardId"`
-
-		// (empty)
 		Amount string `json:"amount"`
 
 		// (empty)
@@ -1045,16 +1042,7 @@ type GetTransactionHistoryResponse struct {
 		CreatedAt string `json:"createdAt"`
 
 		// (empty)
-		GuestMeta map[string]interface{} `json:"guest_meta"`
-
-		// (empty)
 		Id string `json:"id"`
-
-		// (empty)
-		Meta map[string]interface{} `json:"meta"`
-
-		// (empty)
-		RewardType string `json:"reward_type"`
 
 		// (empty)
 		Type string `json:"type"`

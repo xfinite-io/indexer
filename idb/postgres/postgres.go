@@ -3209,14 +3209,58 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	}
 
 	TH_Row_Array := idb.TransactionHistoryRows{}
+	TH_Row_Array.TransactionHistoryRow.Data = make([]struct {
+
+		// (empty)
+		BalanceId string `json:"BalanceId"`
+
+		// (empty)
+		RewardId sql.NullString `json:"RewardId"`
+
+		// (empty)
+		Amount string `json:"amount"`
+
+		// (empty)
+		ClosingBalance string `json:"closing_balance"`
+
+		// (empty)
+		CoinId string `json:"coin_id"`
+
+		// (empty)
+		Created uint64 `json:"created"`
+
+		// (empty)
+		CreatedAt string `json:"createdAt"`
+
+		// (empty)
+		GuestMeta map[string]interface{} `json:"guest_meta"`
+
+		// (empty)
+		Id string `json:"id"`
+
+		// (empty)
+		Meta map[string]interface{} `json:"meta"`
+
+		// (empty)
+		RewardType sql.NullString `json:"reward_type"`
+
+		// (empty)
+		Type string `json:"type"`
+
+		// (empty)
+		UpdatedAt string `json:"updatedAt"`
+	}, 1)
 
 	TH_Row := TH_Row_Array.TransactionHistoryRow.Data[0]
+	fmt.Println(TH_Row)
 
 	for rows.Next() {
 		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.RewardId, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &TH_Row.RewardType, &TH_Row.Meta, &TH_Row.GuestMeta, &TH_Row.CoinId); err != nil {
 			return idb.TransactionHistoryRows{}, err
 		}
-		TH_Row_Array.TransactionHistoryRow.Data = append(TH_Row_Array.TransactionHistoryRow.Data, TH_Row)
+		if TH_Row.Id != "" {
+			TH_Row_Array.TransactionHistoryRow.Data = append(TH_Row_Array.TransactionHistoryRow.Data, TH_Row)
+		}
 	}
 
 	return TH_Row_Array, nil

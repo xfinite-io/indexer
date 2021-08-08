@@ -5,6 +5,7 @@ package generated
 
 import (
 	"time"
+	"database/sql"
 )
 
 // Account defines model for Account.
@@ -1027,7 +1028,7 @@ type GetTransactionHistoryResponse struct {
 		BalanceId string `json:"BalanceId"`
 
 		// (empty)
-		RewardId string `json:"RewardId"`
+		RewardId sql.NullString `json:"RewardId"`
 
 		// (empty)
 		Amount string `json:"amount"`
@@ -1054,7 +1055,7 @@ type GetTransactionHistoryResponse struct {
 		Meta map[string]interface{} `json:"meta"`
 
 		// (empty)
-		RewardType string `json:"reward_type"`
+		RewardType sql.NullString `json:"reward_type"`
 
 		// (empty)
 		Type string `json:"type"`

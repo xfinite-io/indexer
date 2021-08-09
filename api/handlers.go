@@ -553,7 +553,7 @@ func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context, params g
 
 	searchParams := generated.GetTransactionHistoryParams{
 		Limit: params.Limit,
-		Offset: params.Offset
+		Offset: params.Offset,
 	}
 
 	data := generated.GetTransactionHistoryResponse{}

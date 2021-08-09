@@ -3147,8 +3147,10 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	var address string
+	var addr sdk_types.Address
 	if err != nil {
-		address, err = utils.CreateUserStandaloneAccount()
+		addr, err = utils.CreateUserStandaloneAccount()
+		address = string(addr[:])
 		if err != nil {
 			return idb.BalanceRow{}, err
 		}
@@ -3190,9 +3192,12 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.TransactionHistoryRows, error) {
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
+	var addr sdk_types.Address
 	var address string
 	if err != nil {
-		address, err = utils.CreateUserStandaloneAccount()
+		addr, err = utils.CreateUserStandaloneAccount()
+		address = addr.String()
+		fmt.Println(address)
 		if err != nil {
 			return idb.TransactionHistoryRows{}, err
 		}
@@ -3200,10 +3205,10 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 		address = data.Data
 	}
 
-	fmt.Println(address)
+	addr_b := encoding.Base64([]byte(address))
 
-	query := `select transactions.id, transactions."BalanceId", transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt", transactions."coin_id" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1;`
-	rows, err := db.db.Query(query, user_id)
+	query := `select transactions.id::uuid, transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1 union select note_txid, (get_transaction_closing_balance(note_txid, $2, $1)).amount, note_type, (get_transaction_closing_balance(note_txid, $2, $1)).closingbalance, extract(epoch from created_at at time zone 'utc')::integer, created_at, updated_at from public.txn where public.txn.txn->'txn'->>'snd' = $2 or public.txn.txn->'txn'->>'arcv' = $2 order by created_at;`
+	rows, err := db.db.Query(query, user_id, addr_b)
 	if err != nil {
 		return idb.TransactionHistoryRows{}, err
 	}
@@ -3243,7 +3248,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 	fmt.Println(TH_Row)
 
 	for rows.Next() {
-		if err := rows.Scan(&TH_Row.Id, &TH_Row.BalanceId, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &TH_Row.CoinId); err != nil {
+		if err := rows.Scan(&TH_Row.Id, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.CreatedAt, &TH_Row.UpdatedAt); err != nil {
 			return idb.TransactionHistoryRows{}, err
 		}
 		if TH_Row.Id != "" {

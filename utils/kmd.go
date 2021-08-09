@@ -52,16 +52,15 @@ func CreateUserAlgoAddress() (string, error) {
 	return genResponse.Address, nil
 }
 
-func CreateUserStandaloneAccount() (string, error) {
+func CreateUserStandaloneAccount() (types.Address, error) {
 	account := crypto.GenerateAccount()
 	passphrase, err := mnemonic.FromPrivateKey(account.PrivateKey)
 
 	if err != nil {
-		fmt.Printf("Error creating transaction: %s\n", err)
-		return "", err
+		fmt.Printf("Error creating transaction: %s\n", err) 
 	} else {
 		fmt.Printf("My address: %s\n", account.Address)
 		fmt.Printf("My passphrase: %s\n", passphrase)
 	}
-	return account.Address.String(), nil
+	return account.Address, nil
 }

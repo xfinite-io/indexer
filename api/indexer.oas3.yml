@@ -155,6 +155,14 @@
         },
         "x-algorand-format": "base64"
       },
+      "offset": {
+        "description": "Offset into the round where transaction history was confirmed.",
+        "in": "query",
+        "name": "offset",
+        "schema": {
+          "type": "integer"
+        }
+      },
       "rekey-to": {
         "description": "Include results which include the rekey-to field.",
         "in": "query",
@@ -1993,6 +2001,24 @@
       "get": {
         "description": "Get transaction history of an particular user_id",
         "operationId": "getTransactionHistory",
+        "parameters": [
+          {
+            "description": "Maximum number of results to return.",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Offset into the round where transaction history was confirmed.",
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {}

@@ -545,31 +545,20 @@ func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
 
 //GetTransactionHistory returns the transaction history of the user
 // (GET /api/v3/rewards/get/transactions)
-func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context) error {
+func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context, params generated.GetTransactionHistoryParams) error {
 	metadata, err := utils.ExtractTokenMetadata(ctx.Request())
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}
 
-	type dataStruc []struct {
-		BalanceId string `json:"BalanceId"`
-		RewardId string `json:"RewardId"`
-		Amount string `json:"amount"`
-		ClosingBalance string `json:"closing_balance"`
-		CoinId string `json:"coin_id"`
-		Created uint64 `json:"created"`
-		CreatedAt string `json:"createdAt"`
-		GuestMeta map[string]interface{} `json:"guest_meta`
-		Id string `json:"id"`
-		Meta map[string]interface{} `json:"meta"`
-		RewardType string `json:"reward_type"`
-		Type string `json:"type"`
-		UpdatedAt string `json:"updatedAt"`
+	searchParams := generated.GetTransactionHistoryParams{
+		Limit: params.Limit,
+		Offset: params.Offset
 	}
 
 	data := generated.GetTransactionHistoryResponse{}
 
-	out, err := si.db.GetTransactionHistory(ctx.Request().Context(), metadata)
+	out, err := si.db.GetTransactionHistory(ctx.Request().Context(), metadata, searchParams)
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}

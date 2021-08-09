@@ -839,6 +839,9 @@ type Next string
 // NotePrefix defines model for note-prefix.
 type NotePrefix string
 
+// Offset defines model for offset.
+type Offset uint64
+
 // RekeyTo defines model for rekey-to.
 type RekeyTo bool
 

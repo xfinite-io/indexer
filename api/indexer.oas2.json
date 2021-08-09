@@ -670,6 +670,14 @@
       "get": {
         "description": "Get transaction history of an particular user_id",
         "operationId": "getTransactionHistory",
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          }
+        ],
         "tags": ["search"],
         "responses": {
           "200": {
@@ -2008,6 +2016,12 @@
       "type": "integer",
       "description": "Maximum number of results to return.",
       "name": "limit",
+      "in": "query"
+    },
+    "offset": {
+      "type": "integer",
+      "description": "Offset into the round where transaction history was confirmed.",
+      "name": "offset",
       "in": "query"
     },
     "max-round": {

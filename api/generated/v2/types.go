@@ -839,6 +839,9 @@ type Next string
 // NotePrefix defines model for note-prefix.
 type NotePrefix string
 
+// Offset defines model for offset.
+type Offset uint64
+
 // RekeyTo defines model for rekey-to.
 type RekeyTo bool
 
@@ -1081,6 +1084,16 @@ type TransactionsResponse struct {
 	// Used for pagination, when making another request provide this token with the next parameter.
 	NextToken    *string       `json:"next-token,omitempty"`
 	Transactions []Transaction `json:"transactions"`
+}
+
+// GetTransactionHistoryParams defines parameters for GetTransactionHistory.
+type GetTransactionHistoryParams struct {
+
+	// Maximum number of results to return.
+	Limit *uint64 `json:"limit,omitempty"`
+
+	// Offset into the round where transaction history was confirmed.
+	Offset *uint64 `json:"offset,omitempty"`
 }
 
 // SearchForAccountsParams defines parameters for SearchForAccounts.

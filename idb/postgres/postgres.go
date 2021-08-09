@@ -3189,7 +3189,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 }
 
 // GetTransactionHistory is a part of idb.IndexerDB
-func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (idb.TransactionHistoryRows, error) {
+func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, params models.GetTransactionHistoryParams) (idb.TransactionHistoryRows, error) {
 	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
 	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
 	var addr sdk_types.Address
@@ -3206,7 +3206,16 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string) (
 
 	addr_b := encoding.Base64([]byte(address))
 
-	query := `select transactions.id::uuid, transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1 union select note_txid, (get_transaction_closing_balance(note_txid, $2, $1)).amount, note_type, (get_transaction_closing_balance(note_txid, $2, $1)).closingbalance, extract(epoch from created_at at time zone 'utc')::integer, created_at, updated_at from public.txn where public.txn.txn->'txn'->>'snd' = $2 or public.txn.txn->'txn'->>'arcv' = $2 order by created_at;`
+	query := `select transactions.id::uuid, transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1 union select note_txid, (get_transaction_closing_balance(note_txid, $2, $1)).amount, note_type, (get_transaction_closing_balance(note_txid, $2, $1)).closingbalance, extract(epoch from created_at at time zone 'utc')::integer, created_at, updated_at from public.txn where public.txn.txn->'txn'->>'snd' = $2 or public.txn.txn->'txn'->>'arcv' = $2 order by created_at`
+	if params.Limit != nil {
+		query += fmt.Sprintf(" limit %d", params.Limit)
+	}
+	if params.Offset != nil {
+		query += fmt.Sprintf(" offset %d", params.Offset)
+	}
+
+	query += ";"
+
 	rows, err := db.db.Query(query, user_id, addr_b)
 	if err != nil {
 		return idb.TransactionHistoryRows{}, err

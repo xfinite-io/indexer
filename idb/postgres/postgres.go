@@ -3273,7 +3273,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, p
 			return idb.TransactionHistoryRows{}, err
 		}
 		if TH_Row.Id != "" {
-			json.Unmarshal([]byte(coin_images.(string)), &TH_Row.CoinImages)
+			json.Unmarshal(coin_images.([]byte), &TH_Row.CoinImages)
 			TH_Row_Array.TransactionHistoryRow.Data = append(TH_Row_Array.TransactionHistoryRow.Data, TH_Row)
 		}
 	}

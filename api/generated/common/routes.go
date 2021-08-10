@@ -70,7 +70,6 @@ func RegisterHandlers(router interface {
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
-
 	"H4sIAAAAAAAC/+x9/W8cN7Lgv0LMPSD23rQkO5t3iIHFg9ZeX4x1soalZIGzcnmc7poZRt1kL8mWNPHp",
 	"fz+wiuxmd7PnS7LjAPuTrWl+FFmfLFYVP85yVdVKgrRm9uLjrOaaV2BB4188z1UjbSYK91cBJteitkLJ",
 	"2YvwjRmrhVzN5jPhfq25Xc/mM8kr6Nq4/vOZhn81QkMxe2F1A/OZyddQcTew3dSutR/p/n4+40WhwZjx",

@@ -35,6 +35,7 @@ import (
 	"github.com/algorand/indexer/idb/migration"
 	"github.com/algorand/indexer/idb/postgres/internal/encoding"
 	"github.com/algorand/indexer/types"
+	"github.com/algorand/indexer/util"
 	"github.com/algorand/indexer/utils"
 	"github.com/google/uuid"
 )
@@ -52,11 +53,13 @@ var serializable = sql.TxOptions{Isolation: sql.LevelSerializable} // be a real 
 var readonlyRepeatableRead = sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true}
 
 // OpenPostgres is available for creating test instances of postgres.IndexerDb
-func OpenPostgres(connection string, opts idb.IndexerDbOptions, log *log.Logger) (pdb *IndexerDb, err error) {
+// Returns an error object and a channel that gets closed when blocking migrations
+// finish running successfully.
+func OpenPostgres(connection string, opts idb.IndexerDbOptions, log *log.Logger) (*IndexerDb, chan struct{}, error) {
 	db, err := sql.Open("postgres", connection)
 
 	if err != nil {
-		return nil, fmt.Errorf("connecting to postgres: %v", err)
+		return nil, nil, fmt.Errorf("connecting to postgres: %v", err)
 	}
 
 	if strings.Contains(connection, "readonly") {
@@ -67,28 +70,41 @@ func OpenPostgres(connection string, opts idb.IndexerDbOptions, log *log.Logger)
 }
 
 // Allow tests to inject a DB
-func openPostgres(db *sql.DB, opts idb.IndexerDbOptions, logger *log.Logger) (pdb *IndexerDb, err error) {
-	pdb = &IndexerDb{
+func openPostgres(db *sql.DB, opts idb.IndexerDbOptions, logger *log.Logger) (*IndexerDb, chan struct{}, error) {
+	idb := &IndexerDb{
 		readonly: opts.ReadOnly,
 		log:      logger,
 		db:       db,
 	}
 
-	if pdb.log == nil {
-		pdb.log = log.New()
-		pdb.log.SetFormatter(&log.JSONFormatter{})
-		pdb.log.SetOutput(os.Stdout)
-		pdb.log.SetLevel(log.TraceLevel)
+	if idb.log == nil {
+		idb.log = log.New()
+		idb.log.SetFormatter(&log.JSONFormatter{})
+		idb.log.SetOutput(os.Stdout)
+		idb.log.SetLevel(log.TraceLevel)
 	}
 
+	var ch chan struct{}
 	// e.g. a user named "readonly" is in the connection string
-	if !opts.ReadOnly {
-		err = pdb.init(opts)
+	if opts.ReadOnly {
+		migrationState, err := idb.getMigrationState()
 		if err != nil {
-			return nil, fmt.Errorf("initializing postgres: %v", err)
+			return nil, nil, fmt.Errorf("openPostgres() err: %w", err)
+		}
+
+		ch = make(chan struct{})
+		if !migrationStateBlocked(migrationState) {
+			close(ch)
+		}
+	} else {
+		var err error
+		ch, err = idb.init(opts)
+		if err != nil {
+			return nil, nil, fmt.Errorf("initializing postgres: %v", err)
 		}
 	}
-	return
+
+	return idb, ch, nil
 }
 
 // IndexerDb is an idb.IndexerDB implementation
@@ -153,40 +169,33 @@ func (db *IndexerDb) isSetup() (bool, error) {
 	return true, nil
 }
 
-func (db *IndexerDb) init(opts idb.IndexerDbOptions) error {
+// Returns an error object and a channel that gets closed when blocking migrations
+// finish running successfully.
+func (db *IndexerDb) init(opts idb.IndexerDbOptions) (chan struct{}, error) {
 	setup, err := db.isSetup()
 	if err != nil {
-		return fmt.Errorf("init() err: %w", err)
+		return nil, fmt.Errorf("init() err: %w", err)
 	}
 
 	if !setup {
 		// new database, run setup
 		_, err = db.db.Exec(setup_postgres_sql)
 		if err != nil {
-			return fmt.Errorf("unable to setup postgres: %v", err)
+			return nil, fmt.Errorf("unable to setup postgres: %v", err)
 		}
 
 		err = db.markMigrationsAsDone()
 		if err != nil {
-			return fmt.Errorf("unable to confirm migration: %v", err)
+			return nil, fmt.Errorf("unable to confirm migration: %v", err)
 		}
 
-		return nil
+		ch := make(chan struct{})
+		close(ch)
+		return ch, nil
 	}
 
 	// see postgres_migrations.go
 	return db.runAvailableMigrations()
-}
-
-// Reset is part of idb.IndexerDB
-func (db *IndexerDb) Reset() (err error) {
-	// new database, run setup
-	_, err = db.db.Exec(reset_sql)
-	if err != nil {
-		return fmt.Errorf("db reset failed, %v", err)
-	}
-	db.log.Debugf("reset.sql done")
-	return
 }
 
 // StartBlock is part of idb.IndexerDB
@@ -1071,9 +1080,9 @@ ON CONFLICT (addr, assetid) DO UPDATE SET amount = account_asset.amount + EXCLUD
 
 					// Asset Config
 					if au.Config != nil {
-						var outparams []byte
+						var params sdk_types.AssetParams
 						if au.Config.IsNew {
-							outparams = encoding.EncodeJSON(au.Config.Params)
+							params = au.Config.Params
 						} else {
 							row := getacfg.QueryRow(au.AssetID)
 							var paramjson []byte
@@ -1081,14 +1090,13 @@ ON CONFLICT (addr, assetid) DO UPDATE SET amount = account_asset.amount + EXCLUD
 							if err != nil {
 								return fmt.Errorf("get acfg %d, %v", au.AssetID, err)
 							}
-							var old sdk_types.AssetParams
-							err = encoding.DecodeJSON(paramjson, &old)
+							params, err = encoding.DecodeAssetParams(paramjson)
 							if err != nil {
 								return fmt.Errorf("bad acgf json %d, %v", au.AssetID, err)
 							}
-							np := types.MergeAssetConfig(old, au.Config.Params)
-							outparams = encoding.EncodeJSON(np)
+							params = types.MergeAssetConfig(params, au.Config.Params)
 						}
+						outparams := encoding.EncodeAssetParams(params)
 						_, err = setacfg.Exec(au.AssetID, au.Config.Creator[:], outparams, round)
 						if err != nil {
 							return fmt.Errorf("update asset, %v", err)
@@ -1664,35 +1672,6 @@ func (db *IndexerDb) Transactions(ctx context.Context, tf idb.TransactionFilter)
 	return out, round
 }
 
-func (db *IndexerDb) txTransactions(tx *sql.Tx, tf idb.TransactionFilter) <-chan idb.TxnRow {
-	out := make(chan idb.TxnRow, 1)
-	if len(tf.NextToken) > 0 {
-		err := fmt.Errorf("txTransactions incompatible with next")
-		out <- idb.TxnRow{Error: err}
-		close(out)
-		return out
-	}
-	query, whereArgs, err := buildTransactionQuery(tf)
-	if err != nil {
-		err = fmt.Errorf("txn query err %v", err)
-		out <- idb.TxnRow{Error: err}
-		close(out)
-		return out
-	}
-	rows, err := tx.Query(query, whereArgs...)
-	if err != nil {
-		err = fmt.Errorf("txn query %#v err %v", query, err)
-		out <- idb.TxnRow{Error: err}
-		close(out)
-		return out
-	}
-	go func() {
-		db.yieldTxnsThreadSimple(context.Background(), rows, out, nil, nil)
-		close(out)
-	}()
-	return out
-}
-
 // This function blocks. `tx` must be non-nil.
 func (db *IndexerDb) txnsWithNext(ctx context.Context, tx *sql.Tx, tf idb.TransactionFilter, out chan<- idb.TxnRow) {
 	nextround, nextintra32, err := idb.DecodeTxnRowNext(tf.NextToken)
@@ -2075,8 +2054,7 @@ func (db *IndexerDb) yieldAccountsThread(req *getAccountsRequest) {
 				req.out <- idb.AccountRow{Error: err}
 				break
 			}
-			var assetParams []types.AssetParams
-			err = encoding.DecodeJSON(assetParamsStr, &assetParams)
+			assetParams, err := encoding.DecodeAssetParamsArray(assetParamsStr)
 			if err != nil {
 				err = fmt.Errorf("parsing json asset param string, %v", err)
 				req.out <- idb.AccountRow{Error: err}
@@ -2136,9 +2114,12 @@ func (db *IndexerDb) yieldAccountsThread(req *getAccountsRequest) {
 						Total:         ap.Total,
 						Decimals:      uint64(ap.Decimals),
 						DefaultFrozen: boolPtr(ap.DefaultFrozen),
-						UnitName:      stringPtr(ap.UnitName),
-						Name:          stringPtr(ap.AssetName),
-						Url:           stringPtr(ap.URL),
+						UnitName:      stringPtr(util.PrintableUTF8OrEmpty(ap.UnitName)),
+						UnitNameB64:   baPtr([]byte(ap.UnitName)),
+						Name:          stringPtr(util.PrintableUTF8OrEmpty(ap.AssetName)),
+						NameB64:       baPtr([]byte(ap.AssetName)),
+						Url:           stringPtr(util.PrintableUTF8OrEmpty(ap.URL)),
+						UrlB64:        baPtr([]byte(ap.URL)),
 						MetadataHash:  baPtr(ap.MetadataHash[:]),
 						Manager:       addrStr(ap.Manager),
 						Reserve:       addrStr(ap.Reserve),
@@ -2716,12 +2697,13 @@ func (db *IndexerDb) yieldAssetsThread(ctx context.Context, filter idb.AssetsQue
 			out <- idb.AssetRow{Error: err}
 			break
 		}
-		var params types.AssetParams
-		err = encoding.DecodeJSON(paramsJSONStr, &params)
+		params, err := encoding.DecodeAssetParams(paramsJSONStr)
 		if err != nil {
 			out <- idb.AssetRow{Error: err}
 			break
 		}
+		var creator types.Address
+		copy(creator[:], creatorAddr)
 		rec := idb.AssetRow{
 			AssetID:      index,
 			Creator:      creatorAddr,

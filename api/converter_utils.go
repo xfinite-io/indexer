@@ -15,8 +15,8 @@ import (
 
 	"github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/idb"
-	"github.com/algorand/indexer/importer"
 	"github.com/algorand/indexer/types"
+	"github.com/algorand/indexer/util"
 )
 
 //////////////////////////////////////////////////////////////////////
@@ -127,10 +127,10 @@ func decodeSigType(str *string, errorArr []string) (idb.SigType, []string) {
 }
 
 // decodeType validates the input string and dereferences it if present, or appends an error to errorArr
-func decodeType(str *string, errorArr []string) (t int, err []string) {
+func decodeType(str *string, errorArr []string) (t idb.TxnTypeEnum, err []string) {
 	if str != nil {
-		typeLc := strings.ToLower(*str)
-		if val, ok := importer.TypeEnumMap[typeLc]; ok {
+		typeLc := sdk_types.TxType(strings.ToLower(*str))
+		if val, ok := idb.GetTypeEnum(typeLc); ok {
 			return val, errorArr
 		}
 		return 0, append(errorArr, fmt.Sprintf("%s: '%s'", errUnknownTxType, typeLc))
@@ -300,11 +300,14 @@ func txnRowToTransaction(row idb.TxnRow) (generated.Transaction, error) {
 			Freeze:        addrPtr(stxn.Txn.AssetParams.Freeze),
 			Manager:       addrPtr(stxn.Txn.AssetParams.Manager),
 			MetadataHash:  bytePtr(stxn.Txn.AssetParams.MetadataHash[:]),
-			Name:          strPtr(stxn.Txn.AssetParams.AssetName),
+			Name:          strPtr(util.PrintableUTF8OrEmpty(stxn.Txn.AssetParams.AssetName)),
+			NameB64:       bytePtr([]byte(stxn.Txn.AssetParams.AssetName)),
 			Reserve:       addrPtr(stxn.Txn.AssetParams.Reserve),
 			Total:         stxn.Txn.AssetParams.Total,
-			UnitName:      strPtr(stxn.Txn.AssetParams.UnitName),
-			Url:           strPtr(stxn.Txn.AssetParams.URL),
+			UnitName:      strPtr(util.PrintableUTF8OrEmpty(stxn.Txn.AssetParams.UnitName)),
+			UnitNameB64:   bytePtr([]byte(stxn.Txn.AssetParams.UnitName)),
+			Url:           strPtr(util.PrintableUTF8OrEmpty(stxn.Txn.AssetParams.URL)),
+			UrlB64:        bytePtr([]byte(stxn.Txn.AssetParams.URL)),
 		}
 		config := generated.TransactionAssetConfig{
 			AssetId: uint64Ptr(uint64(stxn.Txn.ConfigAsset)),

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
-	"github.com/algorand/indexer/util"
 
 	"github.com/algorand/indexer/idb"
 	"github.com/algorand/indexer/types"
@@ -83,10 +82,10 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 	round := uint64(block.Round)
 	for intra := range block.Payset {
 		stxn := &block.Payset[intra]
-		txtype := string(stxn.Txn.Type)
-		txtypeenum, ok := TypeEnumMap[txtype]
+		txtypeenum, ok := idb.GetTypeEnum(stxn.Txn.Type)
 		if !ok {
-			return txCount, fmt.Errorf("%d:%d unknown txn type %v", round, intra, txtype)
+			return txCount,
+				fmt.Errorf("%d:%d unknown txn type %v", round, intra, stxn.Txn.Type)
 		}
 		assetid := uint64(0)
 		switch txtypeenum {

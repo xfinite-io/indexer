@@ -121,7 +121,3 @@ func(db *dummyIndexerDb) GetTransactionHistory(ctx context.Context, user_id stri
 func (db *dummyIndexerDb) Health() (state idb.Health, err error) {
 	return idb.Health{}, nil
 }
-
-func (db *dummyIndexerDb) Reset() (err error) {
-	return nil
-}

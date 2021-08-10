@@ -19,7 +19,7 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
-	//"encoding/json"
+	"encoding/json"
 	"crypto/sha256"
 
 	"github.com/algorand/go-algorand-sdk/crypto"
@@ -3206,7 +3206,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, p
 
 	addr_b := encoding.Base64([]byte(address))
 
-	query := `select transactions.id::uuid, transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" where balances.user_id=$1 union select note_txid, (get_transaction_closing_balance(note_txid, $2, $1)).amount, note_type, (get_transaction_closing_balance(note_txid, $2, $1)).closingbalance, extract(epoch from created_at at time zone 'utc')::integer, created_at, updated_at from public.txn where public.txn.txn->'txn'->>'snd' = $2 or public.txn.txn->'txn'->>'arcv' = $2 order by created_at desc`
+	query := `select transactions.id::uuid, transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt", coins.image::jsonb, coins.name, coins."coin_type" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" inner join balances."Coins" as coins on transactions."coin_id" = coins.id where balances.user_id=$1 union select note_txid, (get_transaction_closing_balance(note_txid, $2, $1)).amount, note_type, (get_transaction_closing_balance(note_txid, $2, $1)).closingbalance, extract(epoch from created_at at time zone 'utc')::integer, created_at, updated_at, coins.image::jsonb, coins.name, coins."coin_type" from public.txn inner join balances."Coins" as coins on coins.id = (case when note->'meta'?'coin_id' then cast(note->'meta'->>'coin_id' as uuid) else '362b2e89-de10-4974-99aa-ea6a55bf30d3'::uuid end) where public.txn.txn->'txn'->>'snd' = $2 or public.txn.txn->'txn'->>'arcv' = $2 order by created_at desc`
 	if params.Limit != nil {
 		query += fmt.Sprintf(" limit %d", *params.Limit)
 		fmt.Println(*params.Limit)
@@ -3239,6 +3239,15 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, p
 		CoinId string `json:"coin_id"`
 
 		// (empty)
+		CoinImages map[string]interface{} `json:"coin_images"`
+
+		// (empty)
+		CoinName string `json:"coin_name"`
+
+		// (empty)
+		CoinType string `json:"coin_type"`
+
+		// (empty)
 		Created uint64 `json:"created"`
 
 		// (empty)
@@ -3257,11 +3266,14 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, p
 	TH_Row := TH_Row_Array.TransactionHistoryRow.Data[0]
 	fmt.Println(TH_Row)
 
+	var coin_images interface{}
+
 	for rows.Next() {
-		if err := rows.Scan(&TH_Row.Id, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.CreatedAt, &TH_Row.UpdatedAt); err != nil {
+		if err := rows.Scan(&TH_Row.Id, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &coin_images, &TH_Row.CoinName, &TH_Row.CoinType); err != nil {
 			return idb.TransactionHistoryRows{}, err
 		}
 		if TH_Row.Id != "" {
+			json.Unmarshal([]byte(coin_images.(string)), &TH_Row.CoinImages)
 			TH_Row_Array.TransactionHistoryRow.Data = append(TH_Row_Array.TransactionHistoryRow.Data, TH_Row)
 		}
 	}

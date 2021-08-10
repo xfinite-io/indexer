@@ -1039,6 +1039,15 @@ type GetTransactionHistoryResponse struct {
 		CoinId string `json:"coin_id"`
 
 		// (empty)
+		CoinImages map[string]interface{} `json:"coin_images"`
+
+		// (empty)
+		CoinName string `json:"coin_name"`
+
+		// (empty)
+		CoinType string `json:"coin_type"`
+
+		// (empty)
 		Created uint64 `json:"created"`
 
 		// (empty)

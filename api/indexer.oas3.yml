@@ -616,6 +616,19 @@
                         "description": "(empty)",
                         "type": "string"
                       },
+                      "coin_images": {
+                        "description": "(empty)",
+                        "properties": {},
+                        "type": "object"
+                      },
+                      "coin_name": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "coin_type": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
                       "created": {
                         "description": "(empty)",
                         "type": "integer"
@@ -642,6 +655,9 @@
                       "amount",
                       "closing_balance",
                       "coin_id",
+                      "coin_images",
+                      "coin_name",
+                      "coin_type",
                       "created",
                       "createdAt",
                       "id",

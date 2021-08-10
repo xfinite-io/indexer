@@ -684,7 +684,7 @@
             "content": {
               "application/json": {
                 "schema": {
-
+                  "$ref": "#/responses/GetTransactionHistoryResponse"
                 }
               }
             }
@@ -2546,22 +2546,33 @@
                 "updatedAt": {
                   "description": "(empty)",
                   "type": "string"
+                },
+                "coin_images": {
+                  "description": "(empty)",
+                  "type": "object"
+                },
+                "coin_name": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "coin_type": {
+                  "description": "(empty)",
+                  "type": "string"
                 }
               },
               "required": [
                 "id",
                 "BalanceId",
                 "amount",
-                "type",
-                "reward_type",
+                "type",                
                 "closing_balance",
-                "created",
-                "RewardId",
+                "created",                
                 "coin_id",
-                "meta",
-                "guest_meta",
                 "createdAt",
-                "updatedAt"
+                "updatedAt",
+                "coin_images",
+                "coin_name",
+                "coin_type"
               ]
             }
           }

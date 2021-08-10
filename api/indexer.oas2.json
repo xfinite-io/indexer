@@ -12,7 +12,7 @@
     },
     "version": "2.0"
   },
-  "host": "example.com",
+  "host": "https://ec2-15-207-249-100.ap-south-1.compute.amazonaws.com/",
   "produces": [
     "application/json"
   ],
@@ -613,6 +613,80 @@
           "500": {
             "schema": {
               "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/redemption/api/v2/coupon/getRedemptions/transactionid": {
+      "post": {
+        "description": "Redemption api to get coupon details",
+        "operationId": "getRedemption",
+        "tags": ["search"],
+        "requestbody": {
+          "description":"(empty)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "transaction_id": {
+                  "type":"string"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref":"#/responses/GetRedemptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/rewards/get/balance": {
+      "get": {
+        "description": "Get balance from user_id",
+        "operationId": "getBalance",
+        "tags": ["search"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref":"#/responses/GetBalanceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/rewards/get/transactions": {
+      "get": {
+        "description": "Get transaction history of an particular user_id",
+        "operationId": "getTransactionHistory",
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          }
+        ],
+        "tags": ["search"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/responses/GetTransactionHistoryResponse"
+                }
+              }
             }
           }
         }
@@ -1959,6 +2033,12 @@
       "name": "limit",
       "in": "query"
     },
+    "offset": {
+      "type": "integer",
+      "description": "Offset into the round where transaction history was confirmed.",
+      "name": "offset",
+      "in": "query"
+    },
     "max-round": {
       "type": "integer",
       "description": "Include results at or before the specified max-round.",
@@ -2258,6 +2338,266 @@
             }
           }
         }
+      }
+    },
+    "GetRedemptionResponse": {
+      "description":"(empty)",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "(empty)",
+            "type": "integer"
+          },
+          "success": {
+            "description": "(empty)",
+            "type": "bool"
+          },
+          "message": {
+            "description": "(empty)",
+            "type": "string"
+          },
+          "data": {
+            "description": "(empty)",
+            "type": "object",
+            "properties": {
+              "amount": {
+                "description": "(empty)",
+                "type": "number"
+              },
+              "coupon_id": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_code": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "usage_id": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_how_to_redeem": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_discount": {
+                "description": "(empty)",
+                "type": "number"
+              },
+              "coupon_tnc": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_details": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_company": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_expiry": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_brand_logo": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_brand_name": {
+                "description": "(empty)",
+                "type": "string"
+              },
+              "coupon_images": {
+                "description": "(empty)",
+                "type": "array",
+                "items": {
+                  "description": "(empty)",
+                  "type": "object",
+                  "properties": {
+                    "coupon_images": {
+                      "description": "(empty)",
+                      "type": "array",
+                      "items": {
+                        "description": "(empty)",
+                        "type": "string"
+                      }
+                    },
+                    "coupon_videos": {
+                      "description": "(empty)",
+                      "type": "array",
+                      "items": {
+                        "description": "(empty)",
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "coupon_images",
+                    "coupon_videos"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "amount",
+              "coupon_id",
+              "coupon_code",
+              "usage_id",
+              "coupon_how_to_redeem",
+              "coupon_discount",
+              "coupon_tnc",
+              "coupon_details",
+              "coupon_company",
+              "coupon_expiry",
+              "coupon_brand_logo",
+              "coupon_brand_name",
+              "coupon_images"
+            ]
+          }
+        },
+        "required": [
+          "message",
+          "code",
+          "success",
+          "data"
+        ]
+      }
+    },
+    "GetBalanceResponse": {
+      "description": "This is getBalance api response structure",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "description": "(empty)",
+            "type": "bool"
+          },
+          "code": {
+            "description": "(empty)",
+            "type": "integer"
+          },
+          "message": {
+            "description": "(empty)",
+            "type": "string"
+          },
+          "data": {
+            "description": "(empty)",
+            "type": "object",
+            "properties": {
+              "balance": {
+                "description": "(empty)",
+                "type": "number"
+              }
+            },
+            "required": ["balance"]
+          }
+        },
+        "required": [
+          "success",
+          "code",
+          "message",
+          "data"
+        ]
+      }
+    },
+    "GetTransactionHistoryResponse": {
+      "description": "This is getTransactionHistory api response structure",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "description": "(empty)",
+            "type": "bool"
+          },
+          "code": {
+            "description": "(empty)",
+            "type": "integer"
+          },
+          "message": {
+            "description": "(empty)",
+            "type": "string"
+          },
+          "data": {
+            "description": "(empty)",
+            "type": "array",
+            "items": {
+              "description": "(empty)",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "BalanceId": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "amount": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "closing_balance": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "created": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "coin_id": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "createdAt": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "coin_images": {
+                  "description": "(empty)",
+                  "type": "object"
+                },
+                "coin_name": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "coin_type": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "BalanceId",
+                "amount",
+                "type",                
+                "closing_balance",
+                "created",                
+                "coin_id",
+                "createdAt",
+                "updatedAt",
+                "coin_images",
+                "coin_name",
+                "coin_type"
+              ]
+            }
+          }
+        },
+        "required": [
+          "success",
+          "code",
+          "message",
+          "data"
+        ]
       }
     }
   },

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"encoding/json"
+	"io/ioutil"
 
 	"github.com/labstack/echo/v4"
 
@@ -15,6 +17,8 @@ import (
 	"github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/idb"
 	"github.com/algorand/indexer/util"
+	"github.com/algorand/indexer/utils"
+	"github.com/google/uuid"
 )
 
 // ServerImplementation implements the handler interface used by the generated route definitions.
@@ -452,6 +456,121 @@ func (si *ServerImplementation) SearchForTransactions(ctx echo.Context, params g
 		Transactions: txns,
 	}
 
+	return ctx.JSON(http.StatusOK, response)
+}
+
+// GetRedemption provides redemption api to get coupon details 
+// (POST /redemption/api/v2/coupon/getRedemptions/transactionid)
+func (si *ServerImplementation) GetRedemption(ctx echo.Context) error {
+	_, err := utils.ExtractTokenMetadata(ctx.Request())
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+	var tx map[string]uuid.UUID
+	body, err := ioutil.ReadAll(ctx.Request().Body)
+	if err != nil {
+        return badRequest(ctx, err.Error())
+    }
+	err = json.Unmarshal(body, &tx)
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+	transaction_id := tx["transaction_id"]
+	out, err := si.db.GetRedemptions(ctx.Request().Context(), transaction_id)
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+	
+	type dataStruc struct {
+		Amount float32 `json:"amount"`
+                CouponBrandLogo string `json:"coupon_brand_logo"`
+                CouponBrandName string `json:"coupon_brand_name"`
+                CouponCode string `json:"coupon_code"`
+                CouponCompany string `json:"coupon_company"`
+                CouponDetails string `json:"coupon_details"`
+                CouponDiscount float32 `json:"coupon_discount"`
+                CouponExpiry string `json:"coupon_expiry"`
+                CouponHowToRedeem string `json:"coupon_how_to_redeem"`
+                CouponId string `json:"coupon_id"`
+                CouponImages []struct {
+                        CouponImages []string `json:"coupon_images"`
+                        CouponVideos []string `json:"coupon_videos"`
+                } `json:"coupon_images"`
+                CouponTnc string `json:"coupon_tnc"`
+                UsageId string `json:"usage_id"`
+	}
+
+	var data dataStruc
+	data.Amount = float32(out.Amount)
+        data.CouponBrandLogo = out.Coupon_brand_logo
+        data.CouponBrandName = out.Coupon_brand_name
+        data.CouponCode = out.Coupon_code
+        data.CouponCompany = out.Coupon_company
+        data.CouponDetails = out.Coupon_details
+        data.CouponDiscount = float32(out.Coupon_discount)
+        data.CouponExpiry = out.Coupon_expiry
+        data.CouponHowToRedeem = out.Coupon_how_to_redeem
+        data.CouponId = out.Coupon_id
+        data.CouponImages = append(data.CouponImages, out.Coupon_assets...)
+        data.CouponTnc = out.Coupon_tnc
+        data.UsageId = out.Usage_id
+
+	response := generated.GetRedemptionResponse{
+		Code: uint64(200),
+		Data: data,
+		Message: "data returned",
+	}
+	return ctx.JSON(http.StatusOK, response)
+}
+
+//GetBalance returns the balance amount of user
+// (GET /api/v3/rewards/get/balance)
+func (si *ServerImplementation) GetBalance(ctx echo.Context) error {
+	metadata, err := utils.ExtractTokenMetadata(ctx.Request())
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	out, err := si.db.GetBalance(ctx.Request().Context(), metadata)
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	response := generated.GetBalanceResponse{
+		Code: uint64(200),
+		Data: out,
+		Message: "Success",
+	}
+	return ctx.JSON(http.StatusOK, response)
+}
+
+//GetTransactionHistory returns the transaction history of the user
+// (GET /api/v3/rewards/get/transactions)
+func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context, params generated.GetTransactionHistoryParams) error {
+	metadata, err := utils.ExtractTokenMetadata(ctx.Request())
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	searchParams := generated.GetTransactionHistoryParams{
+		Limit: params.Limit,
+		Offset: params.Offset,
+	}
+
+	data := generated.GetTransactionHistoryResponse{}
+
+	out, err := si.db.GetTransactionHistory(ctx.Request().Context(), metadata, searchParams)
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	data.Data = append(data.Data, out.TransactionHistoryRow.Data...)
+
+	response := generated.GetTransactionHistoryResponse{
+		Code: uint64(200),
+		Data: data.Data,
+		Message: "Success",
+	}
 	return ctx.JSON(http.StatusOK, response)
 }
 

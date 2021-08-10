@@ -848,6 +848,9 @@ type Next string
 // NotePrefix defines model for note-prefix.
 type NotePrefix string
 
+// Offset defines model for offset.
+type Offset uint64
+
 // RekeyTo defines model for rekey-to.
 type RekeyTo bool
 
@@ -946,6 +949,133 @@ type AssetsResponse struct {
 // BlockResponse defines model for BlockResponse.
 type BlockResponse Block
 
+// GetBalanceResponse defines model for GetBalanceResponse.
+type GetBalanceResponse struct {
+
+	// (empty)
+	Code uint64 `json:"code"`
+
+	// (empty)
+	Data struct {
+
+		// (empty)
+		Balance float32 `json:"balance"`
+	} `json:"data"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
+// GetRedemptionResponse defines model for GetRedemptionResponse.
+type GetRedemptionResponse struct {
+
+	// (empty)
+	Code uint64 `json:"code"`
+
+	// (empty)
+	Data struct {
+
+		// (empty)
+		Amount float32 `json:"amount"`
+
+		// (empty)
+		CouponBrandLogo string `json:"coupon_brand_logo"`
+
+		// (empty)
+		CouponBrandName string `json:"coupon_brand_name"`
+
+		// (empty)
+		CouponCode string `json:"coupon_code"`
+
+		// (empty)
+		CouponCompany string `json:"coupon_company"`
+
+		// (empty)
+		CouponDetails string `json:"coupon_details"`
+
+		// (empty)
+		CouponDiscount float32 `json:"coupon_discount"`
+
+		// (empty)
+		CouponExpiry string `json:"coupon_expiry"`
+
+		// (empty)
+		CouponHowToRedeem string `json:"coupon_how_to_redeem"`
+
+		// (empty)
+		CouponId string `json:"coupon_id"`
+
+		// (empty)
+		CouponImages []struct {
+
+			// (empty)
+			CouponImages []string `json:"coupon_images"`
+
+			// (empty)
+			CouponVideos []string `json:"coupon_videos"`
+		} `json:"coupon_images"`
+
+		// (empty)
+		CouponTnc string `json:"coupon_tnc"`
+
+		// (empty)
+		UsageId string `json:"usage_id"`
+	} `json:"data"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
+// GetTransactionHistoryResponse defines model for GetTransactionHistoryResponse.
+type GetTransactionHistoryResponse struct {
+
+	// (empty)
+	Code uint64 `json:"code"`
+
+	// (empty)
+	Data []struct {
+
+		// (empty)
+		BalanceId string `json:"BalanceId"`
+
+		// (empty)
+		Amount string `json:"amount"`
+
+		// (empty)
+		ClosingBalance string `json:"closing_balance"`
+
+		// (empty)
+		CoinId string `json:"coin_id"`
+
+		// (empty)
+		CoinImages map[string]interface{} `json:"coin_images"`
+
+		// (empty)
+		CoinName string `json:"coin_name"`
+
+		// (empty)
+		CoinType string `json:"coin_type"`
+
+		// (empty)
+		Created uint64 `json:"created"`
+
+		// (empty)
+		CreatedAt string `json:"createdAt"`
+
+		// (empty)
+		Id string `json:"id"`
+
+		// (empty)
+		Type string `json:"type"`
+
+		// (empty)
+		UpdatedAt string `json:"updatedAt"`
+	} `json:"data"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
 // HealthCheckResponse defines model for HealthCheckResponse.
 type HealthCheckResponse HealthCheck
 
@@ -972,6 +1102,16 @@ type TransactionsResponse struct {
 	// Used for pagination, when making another request provide this token with the next parameter.
 	NextToken    *string       `json:"next-token,omitempty"`
 	Transactions []Transaction `json:"transactions"`
+}
+
+// GetTransactionHistoryParams defines parameters for GetTransactionHistory.
+type GetTransactionHistoryParams struct {
+
+	// Maximum number of results to return.
+	Limit *uint64 `json:"limit,omitempty"`
+
+	// Offset into the round where transaction history was confirmed.
+	Offset *uint64 `json:"offset,omitempty"`
 }
 
 // SearchForAccountsParams defines parameters for SearchForAccounts.

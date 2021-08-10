@@ -17,6 +17,7 @@ import (
 	models "github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/types"
 	"github.com/algorand/indexer/util"
+	"github.com/google/uuid"
 )
 
 // TxnRow is metadata relating to one transaction in a transaction query.
@@ -80,7 +81,7 @@ var ErrorNotInitialized error = errors.New("accounting not initialized")
 type IndexerDb interface {
 	// The next few functions define the import interface, functions for loading data into the database. StartBlock() through Get/SetImportState().
 	StartBlock() error
-	AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte) error
+	AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte, note_type string, note_txid uuid.UUID, note string) error
 	CommitBlock(round uint64, timestamp int64, rewardslevel uint64, headerbytes []byte) error
 
 	LoadGenesis(genesis types.Genesis) (err error)
@@ -97,6 +98,10 @@ type IndexerDb interface {
 	CommitRoundAccounting(updates RoundUpdates, round uint64, blockHeader *types.BlockHeader) (err error)
 
 	GetBlock(ctx context.Context, round uint64, options GetBlockOptions) (blockHeader types.BlockHeader, transactions []TxnRow, err error)
+
+	GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (RedemptionRow, error)
+	GetBalance(ctx context.Context, user_id string) (BalanceRow, error)
+	GetTransactionHistory(ctx context.Context, user_id string, params models.GetTransactionHistoryParams) (TransactionHistoryRows, error)
 
 	// The next multiple functions return a channel with results as well as the latest round
 	// accounted.
@@ -258,6 +263,35 @@ type ApplicationRow struct {
 	Application models.Application
 	Error       error
 }
+
+type Coupon_asset []struct{
+    CouponImages []string `json:"coupon_images"`
+	CouponVideos []string `json:"coupon_videos"`
+}
+
+type RedemptionRow struct{
+                Amount float64
+                Coupon_id string
+                Coupon_code string
+                Usage_id string
+                Coupon_how_to_redeem string
+                Coupon_discount float64
+                Coupon_tnc string
+                Coupon_details string
+                Coupon_company string
+                Coupon_expiry string
+                Coupon_brand_logo string
+                Coupon_brand_name string
+                Coupon_assets Coupon_asset
+	}
+
+type BalanceRow struct {
+	Balance float32 `json:"balance"`
+}
+
+type TransactionHistoryRows struct {
+	TransactionHistoryRow models.GetTransactionHistoryResponse
+} 
 
 // IndexerDbOptions are the options common to all indexer backends.
 type IndexerDbOptions struct {

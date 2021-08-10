@@ -3,11 +3,13 @@ package importer
 import (
 	"bytes"
 	"fmt"
+	"encoding/json"
 
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 
 	"github.com/algorand/indexer/idb"
 	"github.com/algorand/indexer/types"
+	"github.com/google/uuid"
 )
 
 // Importer is used to import blocks into an idb.IndexerDb object.
@@ -18,6 +20,27 @@ type Importer interface {
 
 type dbImporter struct {
 	db idb.IndexerDb
+}
+
+type noteField struct {
+	org string
+}
+
+// TypeEnumMap is used to convert type strings into idb types.
+var TypeEnumMap = map[string]int{
+	"pay":    idb.TypeEnumPay,
+	"keyreg": idb.TypeEnumKeyreg,
+	"acfg":   idb.TypeEnumAssetConfig,
+	"axfer":  idb.TypeEnumAssetTransfer,
+	"afrz":   idb.TypeEnumAssetFreeze,
+	"appl":   idb.TypeEnumApplication,
+}
+
+// TypeEnumString is used for an error message somewhere.
+var TypeEnumString string
+
+func init() {
+	TypeEnumString = util.KeysStringInt(TypeEnumMap)
 }
 
 var zeroAddr = [32]byte{}
@@ -88,20 +111,28 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 			stxn.Txn.GenesisHash = block.GenesisHash
 		}
 		stxnad := stxn.SignedTxnWithAD
-		participants := make([][]byte, 0, 10)
-		participants = participate(participants, stxn.Txn.Sender[:])
-		participants = participate(participants, stxn.Txn.Receiver[:])
-		participants = participate(participants, stxn.Txn.CloseRemainderTo[:])
-		participants = participate(participants, stxn.Txn.AssetSender[:])
-		participants = participate(participants, stxn.Txn.AssetReceiver[:])
-		participants = participate(participants, stxn.Txn.AssetCloseTo[:])
-		participants = participate(participants, stxn.Txn.FreezeAccount[:])
-		err = imp.db.AddTransaction(
-			round, intra, int(txtypeenum), assetid, stxnad, participants)
-		if err != nil {
-			return txCount, fmt.Errorf("error importing txn r=%d i=%d, %v", round, intra, err)
+		var note map[string]interface{}
+		if stxn.Txn.Note != nil {
+			//fmt.Println(string(stxn.Txn.Note))
+			json.Unmarshal([]byte(stxn.Txn.Note), &note)
+			fmt.Println(note["org"])
+			fmt.Println(note["type"])
+			if note["org"].(string) == "mzaalo" {
+				participants := make([][]byte, 0, 10)
+				participants = participate(participants, stxn.Txn.Sender[:])
+				participants = participate(participants, stxn.Txn.Receiver[:])
+				participants = participate(participants, stxn.Txn.CloseRemainderTo[:])
+				participants = participate(participants, stxn.Txn.AssetSender[:])
+				participants = participate(participants, stxn.Txn.AssetReceiver[:])
+				participants = participate(participants, stxn.Txn.AssetCloseTo[:])
+				participants = participate(participants, stxn.Txn.FreezeAccount[:])
+				err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants, note["type"].(string), uuid.MustParse(note["id"].(string)), string(stxn.Txn.Note))
+				if err != nil {
+					return txCount, fmt.Errorf("error importing txn r=%d i=%d, %v", round, intra, err)
+				}
+				txCount++
+			}
 		}
-		txCount++
 	}
 	blockheaderBytes := msgpack.Encode(block.BlockHeader)
 	err = imp.db.CommitBlock(round, block.TimeStamp, block.RewardsLevel, blockheaderBytes)

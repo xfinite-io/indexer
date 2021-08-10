@@ -8,6 +8,7 @@ import (
 	models "github.com/algorand/indexer/api/generated/v2"
 	"github.com/algorand/indexer/idb"
 	"github.com/algorand/indexer/types"
+	"github.com/google/uuid"
 )
 
 type dummyIndexerDb struct {
@@ -26,7 +27,7 @@ func (db *dummyIndexerDb) StartBlock() (err error) {
 }
 
 // AddTransaction is part of idb.IndexerDB
-func (db *dummyIndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte) error {
+func (db *dummyIndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte, note_type string, note_txid uuid.UUID, note string) error {
 	db.log.Printf("\ttxn %d %d %d %d", round, intra, txtypeenum, assetid)
 	return nil
 }
@@ -100,6 +101,20 @@ func (db *dummyIndexerDb) AssetBalances(ctx context.Context, abq idb.AssetBalanc
 // Applications is part of idb.IndexerDB
 func (db *dummyIndexerDb) Applications(ctx context.Context, filter *models.SearchForApplicationsParams) (<-chan idb.ApplicationRow, uint64) {
 	return nil, 0
+}
+
+func(db *dummyIndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (idb.RedemptionRow, error) {
+	return idb.RedemptionRow{}, nil
+}
+
+// GetBalance is a part of idb.IndexerDB
+func(db *dummyIndexerDb) GetBalance(ctx context.Context, user_id string) (idb.BalanceRow, error) {
+	return idb.BalanceRow{}, nil
+}
+
+// GetTransactionHistory is a part of idb.IndexerDB
+func(db *dummyIndexerDb) GetTransactionHistory(ctx context.Context, user_id string, params models.GetTransactionHistoryParams) (idb.TransactionHistoryRows, error) {
+	return idb.TransactionHistoryRows{}, nil
 }
 
 // Health is part of idb.IndexerDB

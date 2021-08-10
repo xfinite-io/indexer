@@ -155,6 +155,14 @@
         },
         "x-algorand-format": "base64"
       },
+      "offset": {
+        "description": "Offset into the round where transaction history was confirmed.",
+        "in": "query",
+        "name": "offset",
+        "schema": {
+          "type": "integer"
+        }
+      },
       "rekey-to": {
         "description": "Include results which include the rekey-to field.",
         "in": "query",
@@ -415,6 +423,266 @@
           }
         },
         "description": "(empty)"
+      },
+      "GetBalanceResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "(empty)",
+                  "properties": {
+                    "balance": {
+                      "description": "(empty)",
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "balance"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "data",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "This is getBalance api response structure"
+      },
+      "GetRedemptionResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "(empty)",
+                  "properties": {
+                    "amount": {
+                      "description": "(empty)",
+                      "type": "number"
+                    },
+                    "coupon_brand_logo": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_brand_name": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_code": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_company": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_details": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_discount": {
+                      "description": "(empty)",
+                      "type": "number"
+                    },
+                    "coupon_expiry": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_how_to_redeem": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_id": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "coupon_images": {
+                      "description": "(empty)",
+                      "items": {
+                        "description": "(empty)",
+                        "properties": {
+                          "coupon_images": {
+                            "description": "(empty)",
+                            "items": {
+                              "description": "(empty)",
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "coupon_videos": {
+                            "description": "(empty)",
+                            "items": {
+                              "description": "(empty)",
+                              "type": "string"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "coupon_images",
+                          "coupon_videos"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "coupon_tnc": {
+                      "description": "(empty)",
+                      "type": "string"
+                    },
+                    "usage_id": {
+                      "description": "(empty)",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "coupon_brand_logo",
+                    "coupon_brand_name",
+                    "coupon_code",
+                    "coupon_company",
+                    "coupon_details",
+                    "coupon_discount",
+                    "coupon_expiry",
+                    "coupon_how_to_redeem",
+                    "coupon_id",
+                    "coupon_images",
+                    "coupon_tnc",
+                    "usage_id"
+                  ],
+                  "type": "object"
+                },
+                "message": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "data",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "(empty)"
+      },
+      "GetTransactionHistoryResponse": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "code": {
+                  "description": "(empty)",
+                  "type": "integer"
+                },
+                "data": {
+                  "description": "(empty)",
+                  "items": {
+                    "description": "(empty)",
+                    "properties": {
+                      "BalanceId": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "amount": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "closing_balance": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "coin_id": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "coin_images": {
+                        "description": "(empty)",
+                        "properties": {},
+                        "type": "object"
+                      },
+                      "coin_name": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "coin_type": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "created": {
+                        "description": "(empty)",
+                        "type": "integer"
+                      },
+                      "createdAt": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "(empty)",
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "description": "(empty)",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "BalanceId",
+                      "amount",
+                      "closing_balance",
+                      "coin_id",
+                      "coin_images",
+                      "coin_name",
+                      "coin_type",
+                      "created",
+                      "createdAt",
+                      "id",
+                      "type",
+                      "updatedAt"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "message": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "data",
+                "message"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "description": "This is getTransactionHistory api response structure"
       },
       "HealthCheckResponse": {
         "content": {
@@ -1749,6 +2017,52 @@
   },
   "openapi": "3.0.1",
   "paths": {
+    "/api/v3/rewards/get/balance": {
+      "get": {
+        "description": "Get balance from user_id",
+        "operationId": "getBalance",
+        "responses": {
+          "200": {
+            "content": {}
+          }
+        },
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/v3/rewards/get/transactions": {
+      "get": {
+        "description": "Get transaction history of an particular user_id",
+        "operationId": "getTransactionHistory",
+        "parameters": [
+          {
+            "description": "Maximum number of results to return.",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Offset into the round where transaction history was confirmed.",
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {}
+          }
+        },
+        "tags": [
+          "search"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "makeHealthCheck",
@@ -1771,6 +2085,20 @@
         "summary": "Returns 200 if healthy.",
         "tags": [
           "common"
+        ]
+      }
+    },
+    "/redemption/api/v2/coupon/getRedemptions/transactionid": {
+      "post": {
+        "description": "Redemption api to get coupon details",
+        "operationId": "getRedemption",
+        "responses": {
+          "200": {
+            "content": {}
+          }
+        },
+        "tags": [
+          "search"
         ]
       }
     },
@@ -3071,7 +3399,7 @@
   },
   "servers": [
     {
-      "url": "https://example.com/"
+      "url": "https://https://ec2-15-207-249-100.ap-south-1.compute.amazonaws.com//"
     }
   ],
   "tags": [

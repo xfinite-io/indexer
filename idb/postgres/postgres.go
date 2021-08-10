@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
+	"encoding/json"
+	"crypto/sha256"
 
 	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
@@ -34,6 +36,8 @@ import (
 	"github.com/algorand/indexer/idb/postgres/internal/encoding"
 	"github.com/algorand/indexer/types"
 	"github.com/algorand/indexer/util"
+	"github.com/algorand/indexer/utils"
+	"github.com/google/uuid"
 )
 
 type importState struct {
@@ -113,6 +117,7 @@ type IndexerDb struct {
 	// state for StartBlock/AddTransaction/CommitBlock
 	txrows  [][]interface{}
 	txprows [][]interface{}
+	txcrows [][]interface{}
 
 	migration *migration.Migration
 
@@ -197,16 +202,21 @@ func (db *IndexerDb) init(opts idb.IndexerDbOptions) (chan struct{}, error) {
 func (db *IndexerDb) StartBlock() (err error) {
 	db.txrows = make([][]interface{}, 0, 6000)
 	db.txprows = make([][]interface{}, 0, 10000)
+	db.txcrows = make([][]interface{}, 0, 6000)
 	return nil
 }
 
 // AddTransaction is part of idb.IndexerDB
-func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte) error {
+func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, assetid uint64, txn types.SignedTxnWithAD, participation [][]byte, note_type string, note_txid uuid.UUID, note string) error {
 	txnbytes := msgpack.Encode(txn)
 	jsonbytes := encoding.EncodeSignedTxnWithAD(txn)
 	txid := crypto.TransactionIDString(txn.Txn)
-	tx := []interface{}{round, intra, txtypeenum, assetid, txid[:], txnbytes, string(jsonbytes)}
+	tx := []interface{}{round, intra, txtypeenum, assetid, txid[:], txnbytes, string(jsonbytes), note_type, note_txid, note}
 	db.txrows = append(db.txrows, tx)
+	if txn.Txn.Type == "axfer" {
+		cb := []interface{}{note_txid, assetid, txn.Txn.AssetReceiver[:], txn.Txn.Sender[:], txn.Txn.AssetAmount}
+		db.txcrows = append(db.txcrows, cb)
+	}
 	for _, paddr := range participation {
 		txp := []interface{}{paddr, round, intra}
 		db.txprows = append(db.txprows, txp)
@@ -217,7 +227,7 @@ func (db *IndexerDb) AddTransaction(round uint64, intra int, txtypeenum int, ass
 func (db *IndexerDb) commitBlock(tx *sql.Tx, round uint64, timestamp int64, rewardslevel uint64, headerbytes []byte) error {
 	defer tx.Rollback() // ignored if already committed
 
-	addtx, err := tx.Prepare(`COPY txn (round, intra, typeenum, asset, txid, txnbytes, txn) FROM STDIN`)
+	addtx, err := tx.Prepare(`COPY txn (round, intra, typeenum, asset, txid, txnbytes, txn, note_type, note_txid, note) FROM STDIN`)
 	if err != nil {
 		return fmt.Errorf("COPY txn %v", err)
 	}
@@ -279,12 +289,20 @@ func (db *IndexerDb) commitBlock(tx *sql.Tx, round uint64, timestamp int64, rewa
 		return fmt.Errorf("during addtxp close %v", err)
 	}
 
+	for _, cb := range(db.txcrows){
+		_, err := tx.Exec(`INSERT INTO txn_closingbalance (note_txid, receiver_closingbalance, sender_closingbalance, assetid, receiver_addr, sender_addr) VALUES ($1, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $3) + $5, (SELECT amount FROM account_asset WHERE assetid = $2 AND addr = $4) - $5, $2, $3, $4)`, cb[0], cb[1], cb[2], cb[3], cb[4])
+		if err != nil {
+			return fmt.Errorf("during insert in txn_closingbalance: %v", err)
+		}
+	}
+
 	var blockHeader types.BlockHeader
 	err = msgpack.Decode(headerbytes, &blockHeader)
 	if err != nil {
 		return fmt.Errorf("decode header %v", err)
 	}
 	headerjson := encoding.EncodeJSON(blockHeader)
+	
 	_, err = tx.Exec(`INSERT INTO block_header (round, realtime, rewardslevel, header) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING`, round, time.Unix(timestamp, 0).UTC(), rewardslevel, headerjson)
 	if err != nil {
 		return fmt.Errorf("put block_header %v    %#v", err, err)
@@ -302,6 +320,7 @@ func (db *IndexerDb) CommitBlock(round uint64, timestamp int64, rewardslevel uin
 
 	db.txrows = nil
 	db.txprows = nil
+	db.txcrows = nil
 
 	if err != nil {
 		return fmt.Errorf("CommitBlock(): %v", err)
@@ -3029,4 +3048,217 @@ func (db *IndexerDb) GetSpecialAccounts() (idb.SpecialAccounts, error) {
 	}
 
 	return accounts, nil
+}
+
+
+// GetRedemptions is a part of idb.IndexerDB
+func(db *IndexerDb) GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (idb.RedemptionRow, error) {
+	cond_query := `SELECT exists (SELECT txn.note_txid FROM txn WHERE txn.note_txid = $1 LIMIT 1);`
+	c_rows, err := db.db.Query(cond_query, transaction_id)
+	var cond bool
+	for c_rows.Next() {
+		if err := c_rows.Scan(&cond); err != nil {
+			log.Fatal(err)
+		} 
+	}
+
+	var query string
+	if cond {
+		query = `select txn.note->'meta'->'amount' as amount, txn.note->'meta'->'coupon_id' as coupon_id , txn.note->'meta'->'coupon_code' as coupon_code, txn.note->'meta'->'usage_id' as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , assets.coupon_videos, assets.coupon_images from redemption.redemption_couponid as coupon_detail inner join redemption.redemption_couponassets as assets on assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id inner join txn as txn on (txn.note->'meta'->>'coupon_id')::uuid=coupon_detail.id where coupon_detail.id = ( select (note->'meta'->>'coupon_id')::uuid from txn  where note_txid= $1 limit 1 ) ;`
+	} else {
+		query = `select redemption.amount as amount, redemption.coupon_id_id as coupon_id , redemption.coupon_code as coupon_code, redemption.usage_id as usage_id, coupon_detail.coupon_how_to_redeem as coupon_how_to_redeem ,coupon_detail.coupon_discount as coupon_discount, coupon_detail.coupon_tnc as coupon_tnc , coupon_detail.coupon_details as coupon_details, coupon_detail.coupon_company as coupon_company, coupon_detail.coupon_expiry as coupon_expiry , brands.company_logo as coupon_brand_logo, brands.name as coupon_brand_name , coupon_assets.coupon_videos, coupon_assets.coupon_images from redemption.redemption_redemption as redemption left join redemption.redemption_couponid as coupon_detail on coupon_detail.id=redemption.coupon_id_id inner join redemption.redemption_couponassets as coupon_assets on coupon_assets.coupon_id_id=coupon_detail.id inner join redemption.redemption_brands as brands on brands.id=coupon_detail.brand_id where redemption.id= $1;`
+	}
+
+	rows, err := db.db.Query(query, transaction_id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	type CA struct{
+        CouponImages []string `json:"coupon_images"`
+		CouponVideos []string `json:"coupon_videos"`
+    }
+
+	var r_Row idb.RedemptionRow
+
+	for rows.Next() {
+		var coupon_asset CA
+		var (
+			amount float64
+			coupon_id string
+			coupon_code string
+			usage_id string
+			coupon_how_to_redeem string
+			coupon_discount float64
+			coupon_tnc string 
+			coupon_details string
+			coupon_company string
+			coupon_expiry string
+			coupon_brand_logo string
+			coupon_brand_name string 
+			coupon_assets idb.Coupon_asset
+		)
+		if err := rows.Scan(&amount, &coupon_id, &coupon_code, &usage_id, &coupon_how_to_redeem, &coupon_discount, &coupon_tnc, &coupon_details, &coupon_company, &coupon_expiry, &coupon_brand_logo, &coupon_brand_name, pq.Array(&coupon_asset.CouponVideos), pq.Array(&coupon_asset.CouponImages)); err != nil {
+			return idb.RedemptionRow{}, err
+		}
+		//err := json.Unmarshal(coupon_asset, &coupon_assets[len(coupon_assets)-1])
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
+		coupon_assets = append(coupon_assets, coupon_asset)
+		r_Row.Amount = amount
+		r_Row.Coupon_id = coupon_id
+		r_Row.Coupon_code = coupon_code
+		r_Row.Usage_id = usage_id
+		r_Row.Coupon_how_to_redeem = coupon_how_to_redeem
+		r_Row.Coupon_discount = coupon_discount
+		r_Row.Coupon_tnc = coupon_tnc
+		r_Row.Coupon_details = coupon_details
+		r_Row.Coupon_company = coupon_company
+		r_Row.Coupon_expiry = coupon_expiry
+		r_Row.Coupon_brand_name = coupon_brand_name
+		r_Row.Coupon_brand_logo = coupon_brand_logo
+		r_Row.Coupon_assets = append(r_Row.Coupon_assets, coupon_assets...)
+	}
+	return r_Row, nil
+}
+
+// GetBalance is a part of idb.IndexerDB
+func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.BalanceRow, error) {
+	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
+	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
+	var address string
+	var addr sdk_types.Address
+	if err != nil {
+		addr, err = utils.CreateUserStandaloneAccount()
+		address = addr.String()
+		if err != nil {
+			return idb.BalanceRow{}, err
+		}
+	} else {
+		address = data.Data
+	}
+
+	decoded_address, err := sdk_types.DecodeAddress(address)
+	if err != nil {
+		return idb.BalanceRow{}, err
+	}
+
+
+	query := `select (select amount from balances."Balances" where user_id=$1) + (select amount from account_asset where exists (select amount from account_asset where addr=$2) and addr=$2) as totalamount;`
+	rows, err := db.db.Query(query, user_id, decoded_address[:])
+	if err != nil {
+		return idb.BalanceRow{}, err
+	}
+
+	B_row := idb.BalanceRow{}
+
+	var rb interface{}
+
+	for rows.Next(){
+		if err := rows.Scan(&rb); err != nil {
+			return idb.BalanceRow{}, err
+		}
+	}
+	if rb != nil {
+		B_row.Balance = rb.(float32)
+	} else {
+		B_row.Balance = float32(0)
+	}
+
+	return B_row, nil
+}
+
+// GetTransactionHistory is a part of idb.IndexerDB
+func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, params models.GetTransactionHistoryParams) (idb.TransactionHistoryRows, error) {
+	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
+	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
+	var addr sdk_types.Address
+	var address string
+	if err != nil {
+		addr, err = utils.CreateUserStandaloneAccount()
+		address = addr.String()
+		if err != nil {
+			return idb.TransactionHistoryRows{}, err
+		}
+	} else {
+		address = data.Data
+	}
+
+	addr_b := encoding.Base64([]byte(address))
+
+	query := `select transactions.id::uuid, transactions.amount, transactions.type, transactions.closing_balance, transactions.created_at, transactions."createdAt", transactions."updatedAt", coins.image::jsonb, coins.name, coins."coin_type" from balances."Transactions" as transactions inner join balances."Balances" as balances on balances.id = transactions."BalanceId" inner join balances."Coins" as coins on transactions."coin_id" = coins.id where balances.user_id=$1 union select note_txid, (get_transaction_closing_balance(note_txid, $2, $1)).amount, note_type, (get_transaction_closing_balance(note_txid, $2, $1)).closingbalance, extract(epoch from created_at at time zone 'utc')::integer, created_at, updated_at, coins.image::jsonb, coins.name, coins."coin_type" from public.txn inner join balances."Coins" as coins on coins.id = (case when note->'meta'?'coin_id' then cast(note->'meta'->>'coin_id' as uuid) else '362b2e89-de10-4974-99aa-ea6a55bf30d3'::uuid end) where public.txn.txn->'txn'->>'snd' = $2 or public.txn.txn->'txn'->>'arcv' = $2 order by created_at desc`
+	if params.Limit != nil {
+		query += fmt.Sprintf(" limit %d", *params.Limit)
+		fmt.Println(*params.Limit)
+	}
+	if params.Offset != nil {
+		query += fmt.Sprintf(" offset %d", *params.Offset)
+		fmt.Println(*params.Offset)
+	}
+
+	query += ";"
+
+	rows, err := db.db.Query(query, user_id, addr_b)
+	if err != nil {
+		return idb.TransactionHistoryRows{}, err
+	}
+
+	TH_Row_Array := idb.TransactionHistoryRows{}
+	TH_Row_Array.TransactionHistoryRow.Data = make([]struct {
+
+		// (empty)
+		BalanceId string `json:"BalanceId"`
+
+		// (empty)
+		Amount string `json:"amount"`
+
+		// (empty)
+		ClosingBalance string `json:"closing_balance"`
+
+		// (empty)
+		CoinId string `json:"coin_id"`
+
+		// (empty)
+		CoinImages map[string]interface{} `json:"coin_images"`
+
+		// (empty)
+		CoinName string `json:"coin_name"`
+
+		// (empty)
+		CoinType string `json:"coin_type"`
+
+		// (empty)
+		Created uint64 `json:"created"`
+
+		// (empty)
+		CreatedAt string `json:"createdAt"`
+
+		// (empty)
+		Id string `json:"id"`
+
+		// (empty)
+		Type string `json:"type"`
+
+		// (empty)
+		UpdatedAt string `json:"updatedAt"`
+	}, 1)
+
+	TH_Row := TH_Row_Array.TransactionHistoryRow.Data[0]
+	fmt.Println(TH_Row)
+
+	var coin_images interface{}
+
+	for rows.Next() {
+		if err := rows.Scan(&TH_Row.Id, &TH_Row.Amount, &TH_Row.Type, &TH_Row.ClosingBalance, &TH_Row.Created, &TH_Row.CreatedAt, &TH_Row.UpdatedAt, &coin_images, &TH_Row.CoinName, &TH_Row.CoinType); err != nil {
+			return idb.TransactionHistoryRows{}, err
+		}
+		if TH_Row.Id != "" {
+			json.Unmarshal(coin_images.([]byte), &TH_Row.CoinImages)
+			TH_Row_Array.TransactionHistoryRow.Data = append(TH_Row_Array.TransactionHistoryRow.Data, TH_Row)
+		}
+	}
+
+	return TH_Row_Array, nil
 }

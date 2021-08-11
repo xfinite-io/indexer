@@ -118,7 +118,7 @@ func(db *dummyIndexerDb) GetTransactionHistory(ctx context.Context, user_id stri
 }
 
 // GetOrderHistory is a part of idb.IndexerDB
-func(db *IndexerDb) GetOrderHistory(ctx context.Context, user_id string, params models.GetOrderHistoryParams) (idb.OrderHistoryRows, error) {
+func(db *dummyIndexerDb) GetOrderHistory(ctx context.Context, user_id string, params models.GetOrderHistoryParams) (idb.OrderHistoryRows, error) {
 	return idb.OrderHistoryRows{}, nil
 }
 

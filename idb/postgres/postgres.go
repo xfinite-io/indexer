@@ -3273,7 +3273,7 @@ func(db *IndexerDb) GetOrderHistory(ctx context.Context, user_id string, params 
 		addr, err = utils.CreateUserStandaloneAccount()
 		address = addr.String()
 		if err != nil {
-			return idb.TransactionHistoryRows{}, err
+			return idb.OrderHistoryRows{}, err
 		}
 	} else {
 		address = data.Data
@@ -3282,7 +3282,7 @@ func(db *IndexerDb) GetOrderHistory(ctx context.Context, user_id string, params 
 	addr_b := encoding.Base64([]byte(address))
 	fmt.Println(addr_b)
 
-	query := `select products.id, products.amount, products.title, products.images, products."createdAt", products."updatedAt", orderhistories.is_deleted, orderhistories.category_id from estore."Products" as products inner join estore."OrderHistories" as orderhistories on orderhistories.product_id=products.id where orderhistories.user_id=$1 group by products.id`
+	query := `select products.id, products.amount, products.title, products.images, products."createdAt", products."updatedAt", orderhistories.is_deleted, orderhistories.category_id from estore."Products" as products inner join estore."OrderHistories" as orderhistories on orderhistories.product_id=products.id where orderhistories.user_id=$1`
 
 	if params.Limit != nil {
 		query += fmt.Sprintf(" limit %d", *params.Limit)
@@ -3335,7 +3335,7 @@ func(db *IndexerDb) GetOrderHistory(ctx context.Context, user_id string, params 
 
 	for rows.Next() {
 		if err := rows.Scan(&OH_Row.Id, &OH_Row.Amount, &OH_Row.Title, &images, &OH_Row.CreatedAt, &OH_Row.UpdatedAt, &OH_Row.IsDeleted, &OH_Row.CategoryId); err != nil {
-			return idb.TransactionHistoryRows{}, err
+			return idb.OrderHistoryRows{}, err
 		}
 		if OH_Row.Id != "" {
 			json.Unmarshal(images.([]byte), &OH_Row.Images)

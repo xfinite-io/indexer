@@ -581,6 +581,27 @@ func (si *ServerImplementation) GetOrderHistory(ctx echo.Context, params generat
 	if err != nil {
 		return badRequest(ctx, err.Error())
 	}
+
+	searchParams := generated.GetOrderHistoryParams{
+                Limit: params.Limit,
+                Offset: params.Offset,
+        }
+
+        data := generated.GetOrderHistoryResponse{}
+
+        out, err := si.db.GetOrderHistory(ctx.Request().Context(), metadata, searchParams)
+        if err != nil {
+                return badRequest(ctx, err.Error())
+        }
+
+        data.Data = append(data.Data, out.OrderHistoryRow.Data...)
+
+        response := generated.GetOrderHistoryResponse{
+                Code: uint64(200),
+                Data: data.Data,
+                Message: "Success",
+        }
+        return ctx.JSON(http.StatusOK, response)
 }
 
 ///////////////////

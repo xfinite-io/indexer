@@ -27,6 +27,7 @@ type noteField struct {
 }
 
 // TypeEnumMap is used to convert type strings into idb types.
+/*
 var TypeEnumMap = map[string]int{
 	"pay":    idb.TypeEnumPay,
 	"keyreg": idb.TypeEnumKeyreg,
@@ -42,7 +43,7 @@ var TypeEnumString string
 func init() {
 	TypeEnumString = util.KeysStringInt(TypeEnumMap)
 }
-
+*/
 var zeroAddr = [32]byte{}
 
 func participate(participants [][]byte, addr []byte) [][]byte {
@@ -126,7 +127,7 @@ func (imp *dbImporter) ImportDecodedBlock(blockContainer *types.EncodedBlockCert
 				participants = participate(participants, stxn.Txn.AssetReceiver[:])
 				participants = participate(participants, stxn.Txn.AssetCloseTo[:])
 				participants = participate(participants, stxn.Txn.FreezeAccount[:])
-				err = imp.db.AddTransaction(round, intra, txtypeenum, assetid, stxnad, participants, note["type"].(string), uuid.MustParse(note["id"].(string)), string(stxn.Txn.Note))
+				err = imp.db.AddTransaction(round, intra, int(txtypeenum), assetid, stxnad, participants, note["type"].(string), uuid.MustParse(note["id"].(string)), string(stxn.Txn.Note))
 				if err != nil {
 					return txCount, fmt.Errorf("error importing txn r=%d i=%d, %v", round, intra, err)
 				}

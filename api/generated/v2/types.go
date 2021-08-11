@@ -966,6 +966,44 @@ type GetBalanceResponse struct {
 	Message string `json:"message"`
 }
 
+// GetOrderHistoryResponse defines model for GetOrderHistoryResponse.
+type GetOrderHistoryResponse struct {
+
+	// (empty)
+	Code uint64 `json:"code"`
+
+	// (empty)
+	Data []struct {
+
+		// (empty)
+		Amount string `json:"amount"`
+
+		// (empty)
+		CategoryId string `json:"category_id"`
+
+		// (empty)
+		CreatedAt string `json:"createdAt"`
+
+		// (empty)
+		Id string `json:"id"`
+
+		// (empty)
+		Images map[string]interface{} `json:"images"`
+
+		// (empty)
+		Title string `json:"title"`
+
+		// (empty)
+		UpdatedAt string `json:"updatedAt"`
+
+		// (empty)
+		IsDeleted bool `json:"is_deleted"`
+	} `json:"data"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
 // GetRedemptionResponse defines model for GetRedemptionResponse.
 type GetRedemptionResponse struct {
 
@@ -1106,6 +1144,16 @@ type TransactionsResponse struct {
 
 // GetTransactionHistoryParams defines parameters for GetTransactionHistory.
 type GetTransactionHistoryParams struct {
+
+	// Maximum number of results to return.
+	Limit *uint64 `json:"limit,omitempty"`
+
+	// Offset into the round where transaction history was confirmed.
+	Offset *uint64 `json:"offset,omitempty"`
+}
+
+// GetOrderHistoryParams defines parameters for GetOrderHistory.
+type GetOrderHistoryParams struct {
 
 	// Maximum number of results to return.
 	Limit *uint64 `json:"limit,omitempty"`

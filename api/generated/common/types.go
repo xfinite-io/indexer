@@ -966,6 +966,41 @@ type GetBalanceResponse struct {
 	Message string `json:"message"`
 }
 
+// GetOrderHistoryResponse defines model for GetOrderHistoryResponse.
+type GetOrderHistoryResponse struct {
+
+	// (empty)
+	Code uint64 `json:"code"`
+
+	// (empty)
+	Data []struct {
+
+		// (empty)
+		Amount string `json:"amount"`
+
+		// (empty)
+		CategoryId string `json:"category_id"`
+
+		// (empty)
+		CreatedAt string `json:"createdAt"`
+
+		// (empty)
+		Id string `json:"id"`
+
+		// (empty)
+		Images map[string]interface{} `json:"images"`
+
+		// (empty)
+		Title string `json:"title"`
+
+		// (empty)
+		UpdatedAt string `json:"updatedAt"`
+	} `json:"data"`
+
+	// (empty)
+	Message string `json:"message"`
+}
+
 // GetRedemptionResponse defines model for GetRedemptionResponse.
 type GetRedemptionResponse struct {
 

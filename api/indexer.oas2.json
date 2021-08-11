@@ -691,6 +691,32 @@
           }
         }
       }
+    },
+    "/e-store/api/v2/get/order/history": {
+      "get": {
+        "description": "get order history of particular user_id",
+        "operationId": "getOrderHistory",
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          }
+        ],
+        "tags": ["search"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/responses/GetOrderHistoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -2591,6 +2617,84 @@
               ]
             }
           }
+        },
+        "required": [
+          "success",
+          "code",
+          "message",
+          "data"
+        ]
+      }
+    },
+    "GetOrderHistoryResponse": {
+      "description": "(empty)",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "description": "(empty)",
+            "type": "bool"
+          },
+          "code": {
+            "description": "(empty)",
+            "type": "integer"
+          },
+          "message": {
+            "description": "(empty)",
+            "type": "string"
+          },
+          "data": {
+            "description": "(empty)",
+            "type": "array",
+            "items": {
+              "description": "(empty)",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "category_id": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "images": {
+                  "description": "(empty)",
+                  "type": "object"
+                },
+                "amount": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "is_deleted": {
+                  "description": "(empty)",
+                  "type": "bool"
+                },
+                "createdAt": {
+                  "description": "(empty)",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "(empty)",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "category_id",
+                "title",
+                "images",
+                "amount",
+                "is_deleted",
+                "createdAt",
+                "updatedAt"
+              ]
+            }
+          } 
         },
         "required": [
           "success",

@@ -117,6 +117,11 @@ func(db *dummyIndexerDb) GetTransactionHistory(ctx context.Context, user_id stri
 	return idb.TransactionHistoryRows{}, nil
 }
 
+// GetOrderHistory is a part of idb.IndexerDB
+func(db *IndexerDb) GetOrderHistory(ctx context.Context, user_id string, params models.GetOrderHistoryParams) (idb.OrderHistoryRows, error) {
+	return idb.OrderHistoryRows{}, nil
+}
+
 // Health is part of idb.IndexerDB
 func (db *dummyIndexerDb) Health() (state idb.Health, err error) {
 	return idb.Health{}, nil

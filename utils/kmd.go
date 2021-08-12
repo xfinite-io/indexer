@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"crypto/sha256"
 
 	"github.com/algorand/go-algorand-sdk/client/kmd"
 	"github.com/algorand/go-algorand-sdk/types"
@@ -52,7 +53,7 @@ func CreateUserAlgoAddress() (string, error) {
 	return genResponse.Address, nil
 }
 
-func CreateUserStandaloneAccount() (types.Address, error) {
+func CreateUserStandaloneAccount(user_id string) (types.Address, error) {
 	account := crypto.GenerateAccount()
 	passphrase, err := mnemonic.FromPrivateKey(account.PrivateKey)
 
@@ -61,6 +62,16 @@ func CreateUserStandaloneAccount() (types.Address, error) {
 	} else {
 		fmt.Printf("My address: %s\n", account.Address)
 		fmt.Printf("My passphrase: %s\n", passphrase)
+	}
+
+	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
+	_, err = SetSecret("algo", fmt.Sprintf("%s_publickey", hash), account.Address.String())
+	if err != nil {
+                fmt.Printf("Error adding public key to kms: %s\n", err)
+	}
+	_, err = SetSecret("algo", fmt.Sprintf("%s_privatekey", hash), passphrase)
+	if err != nil {
+                fmt.Printf("Error adding private key to kms: %s\n", err)
 	}
 	return account.Address, nil
 }

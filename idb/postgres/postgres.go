@@ -3131,7 +3131,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 	var address string
 	var addr sdk_types.Address
 	if err != nil {
-		addr, err = utils.CreateUserStandaloneAccount()
+		addr, err = utils.CreateUserStandaloneAccount(user_id)
 		address = addr.String()
 		if err != nil {
 			return idb.BalanceRow{}, err
@@ -3177,7 +3177,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, p
 	var addr sdk_types.Address
 	var address string
 	if err != nil {
-		addr, err = utils.CreateUserStandaloneAccount()
+		addr, err = utils.CreateUserStandaloneAccount(user_id)
 		address = addr.String()
 		if err != nil {
 			return idb.TransactionHistoryRows{}, err
@@ -3270,7 +3270,7 @@ func(db *IndexerDb) GetOrderHistory(ctx context.Context, user_id string, params 
 	var addr sdk_types.Address
 	var address string
 	if err != nil {
-		addr, err = utils.CreateUserStandaloneAccount()
+		addr, err = utils.CreateUserStandaloneAccount(user_id)
 		address = addr.String()
 		if err != nil {
 			return idb.OrderHistoryRows{}, err

@@ -574,6 +574,36 @@ func (si *ServerImplementation) GetTransactionHistory(ctx echo.Context, params g
 	return ctx.JSON(http.StatusOK, response)
 }
 
+//GetOrderHistory returns the order history of the user
+// (GET e-store/api/v2/get/order/history)
+func (si *ServerImplementation) GetOrderHistory(ctx echo.Context, params generated.GetOrderHistoryParams) error {
+	metadata, err := utils.ExtractTokenMetadata(ctx.Request())
+	if err != nil {
+		return badRequest(ctx, err.Error())
+	}
+
+	searchParams := generated.GetOrderHistoryParams{
+                Limit: params.Limit,
+                Offset: params.Offset,
+        }
+
+        data := generated.GetOrderHistoryResponse{}
+
+        out, err := si.db.GetOrderHistory(ctx.Request().Context(), metadata, searchParams)
+        if err != nil {
+                return badRequest(ctx, err.Error())
+        }
+
+        data.Data = append(data.Data, out.OrderHistoryRow.Data...)
+
+        response := generated.GetOrderHistoryResponse{
+                Code: uint64(200),
+                Data: data.Data,
+                Message: "Success",
+        }
+        return ctx.JSON(http.StatusOK, response)
+}
+
 ///////////////////
 // Error Helpers //
 ///////////////////

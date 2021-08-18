@@ -102,6 +102,7 @@ type IndexerDb interface {
 	GetRedemptions(ctx context.Context, transaction_id uuid.UUID) (RedemptionRow, error)
 	GetBalance(ctx context.Context, user_id string) (BalanceRow, error)
 	GetTransactionHistory(ctx context.Context, user_id string, params models.GetTransactionHistoryParams) (TransactionHistoryRows, error)
+	GetOrderHistory(ctx context.Context, user_id string, params models.GetOrderHistoryParams) (OrderHistoryRows, error)
 
 	// The next multiple functions return a channel with results as well as the latest round
 	// accounted.
@@ -292,6 +293,10 @@ type BalanceRow struct {
 type TransactionHistoryRows struct {
 	TransactionHistoryRow models.GetTransactionHistoryResponse
 } 
+
+type OrderHistoryRows struct {
+	OrderHistoryRow models.GetOrderHistoryResponse
+}
 
 // IndexerDbOptions are the options common to all indexer backends.
 type IndexerDbOptions struct {

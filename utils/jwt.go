@@ -120,11 +120,12 @@ func ExtractToken(r *http.Request) string {
 func VerifyToken(r *http.Request) (*jwt.Token, error) {
 	tokenString := ExtractToken(r)
 	fmt.Println(tokenString)
+	secret := os.Getenv("ACCESS_SECRET")
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte("zHdguH0VPpPTJzCftRZelObX"), nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		fmt.Println("token not verified\n")

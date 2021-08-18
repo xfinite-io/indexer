@@ -3131,7 +3131,7 @@ func(db *IndexerDb) GetBalance(ctx context.Context, user_id string) (idb.Balance
 	var address string
 	var addr sdk_types.Address
 	if err != nil {
-		addr, err = utils.CreateUserStandaloneAccount()
+		addr, err = utils.CreateUserStandaloneAccount(user_id)
 		address = addr.String()
 		if err != nil {
 			return idb.BalanceRow{}, err
@@ -3177,7 +3177,7 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, p
 	var addr sdk_types.Address
 	var address string
 	if err != nil {
-		addr, err = utils.CreateUserStandaloneAccount()
+		addr, err = utils.CreateUserStandaloneAccount(user_id)
 		address = addr.String()
 		if err != nil {
 			return idb.TransactionHistoryRows{}, err
@@ -3261,4 +3261,87 @@ func(db *IndexerDb) GetTransactionHistory(ctx context.Context, user_id string, p
 	}
 
 	return TH_Row_Array, nil
+}
+
+// GetOrderHistory is a part of idb.IndexerDB
+func(db *IndexerDb) GetOrderHistory(ctx context.Context, user_id string, params models.GetOrderHistoryParams) (idb.OrderHistoryRows, error) {
+	hash := sha256.Sum256(append([]byte(user_id), []byte("mzaalo")...))
+	data, err := utils.GetSecret("algo", fmt.Sprintf("%s_publickey", hash))
+	var addr sdk_types.Address
+	var address string
+	if err != nil {
+		addr, err = utils.CreateUserStandaloneAccount(user_id)
+		address = addr.String()
+		if err != nil {
+			return idb.OrderHistoryRows{}, err
+		}
+	} else {
+		address = data.Data
+	}
+
+	addr_b := encoding.Base64([]byte(address))
+	fmt.Println(addr_b)
+
+	query := `select products.id, products.amount, products.title, products.images, products."createdAt", products."updatedAt", orderhistories.is_deleted, orderhistories.category_id from estore."Products" as products inner join estore."OrderHistories" as orderhistories on orderhistories.product_id=products.id where orderhistories.user_id=$1`
+
+	if params.Limit != nil {
+		query += fmt.Sprintf(" limit %d", *params.Limit)
+		fmt.Println(*params.Limit)
+	}
+	if params.Offset != nil {
+		query += fmt.Sprintf(" offset %d", *params.Offset)
+		fmt.Println(*params.Offset)
+	}
+
+	query += ";"
+
+	rows, err := db.db.Query(query, user_id)
+	if err != nil {
+		return idb.OrderHistoryRows{}, err
+	}
+
+	OH_Row_Array := idb.OrderHistoryRows{}
+	OH_Row_Array.OrderHistoryRow.Data = make([]struct {
+
+		// (empty)
+		Amount string `json:"amount"`
+
+		// (empty)
+		CategoryId string `json:"category_id"`
+
+		// (empty)
+		CreatedAt string `json:"createdAt"`
+
+		// (empty)
+		Id string `json:"id"`
+
+		// (empty)
+		Images map[string]interface{} `json:"images"`
+
+		// (empty)
+		Title string `json:"title"`
+
+		// (empty)
+		UpdatedAt string `json:"updatedAt"`
+
+		// (empty)
+		IsDeleted bool `json:"is_deleted"`
+	}, 1)
+
+	OH_Row := OH_Row_Array.OrderHistoryRow.Data[0]
+	fmt.Println(OH_Row)
+
+	var images interface{}
+
+	for rows.Next() {
+		if err := rows.Scan(&OH_Row.Id, &OH_Row.Amount, &OH_Row.Title, &images, &OH_Row.CreatedAt, &OH_Row.UpdatedAt, &OH_Row.IsDeleted, &OH_Row.CategoryId); err != nil {
+			return idb.OrderHistoryRows{}, err
+		}
+		if OH_Row.Id != "" {
+			json.Unmarshal(images.([]byte), &OH_Row.Images)
+			OH_Row_Array.OrderHistoryRow.Data = append(OH_Row_Array.OrderHistoryRow.Data, OH_Row)
+		}
+	}
+
+	return OH_Row_Array, nil
 }
